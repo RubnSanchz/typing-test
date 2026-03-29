@@ -1,0 +1,51 @@
+.timer {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.timer__value {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-timer-active);
+  min-width: 3ch;
+  transition: color var(--transition-base);
+}
+
+.timer__value--warning {
+  color: var(--color-timer-warning);
+}
+
+.timer__value--danger {
+  color: var(--color-timer-danger);
+}
+
+.timer__options {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.timer__option {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.timer__option:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-surface-alt);
+}
+
+.timer__option--active {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}

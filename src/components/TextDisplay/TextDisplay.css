@@ -1,0 +1,56 @@
+.text-display {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-lg);
+  line-height: 1.9;
+  color: var(--color-char-pending);
+  padding: 1.5rem;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  user-select: none;
+  cursor: text;
+  /* Prevent layout shift as words complete */
+  position: relative;
+}
+
+.text-display__word {
+  display: inline;
+}
+
+.text-display__space {
+  display: inline;
+}
+
+/* ── Per-character states ── */
+.text-display__char {
+  transition: color var(--transition-fast);
+}
+
+.text-display__char--pending {
+  color: var(--color-char-pending);
+}
+
+.text-display__char--correct {
+  color: var(--color-char-correct);
+}
+
+.text-display__char--incorrect {
+  color: var(--color-char-incorrect);
+  text-decoration: underline;
+  text-decoration-color: var(--color-char-incorrect);
+}
+
+.text-display__char--current {
+  color: var(--color-char-current);
+  background-color: var(--color-char-current-bg);
+  border-radius: 2px;
+}
+
+/* ── Word-level underline for active word ── */
+.text-display__word--active {
+  border-bottom: 2px solid var(--color-accent);
+}
+
+.text-display__word--error {
+  border-bottom: 2px solid var(--color-char-incorrect);
+}
