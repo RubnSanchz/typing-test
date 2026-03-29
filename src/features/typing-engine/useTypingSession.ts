@@ -1,6 +1,7 @@
 import { useReducer, useEffect, useCallback, useMemo, useRef } from 'react'
 import { typingReducer, createInitialSession } from './typingReducer'
 import { calcMetrics } from '@/utils/metrics'
+import { normalizeTextForTyping } from '@/utils/normalizeTextForTyping'
 import type { TypingMetrics } from '@/types/domain'
 
 interface SessionOptions {
@@ -70,18 +71,20 @@ export function useTypingSession(options: SessionOptions) {
   const handleInput = useCallback(
     (value: string) => {
       if (session.status === 'finished') return
+      const normalizedValue = ignorePunctuation ? normalizeTextForTyping(value) : value
+
       // Space = submit word
       if (value.endsWith(' ')) {
-        const trimmed = value.trimEnd()
+        const trimmed = normalizedValue.trimEnd()
         if (trimmed.length > 0) {
           dispatch({ type: 'INPUT_CHANGE', payload: trimmed })
           dispatch({ type: 'WORD_SUBMIT' })
         }
         return
       }
-      dispatch({ type: 'INPUT_CHANGE', payload: value })
+      dispatch({ type: 'INPUT_CHANGE', payload: normalizedValue })
     },
-    [session.status],
+    [ignorePunctuation, session.status],
   )
 
   const reset = useCallback(
