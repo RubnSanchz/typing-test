@@ -1,0 +1,74 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: color-mix(in srgb, var(--color-bg) 80%, transparent);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fade-in 200ms ease;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 320px;
+  animation: slide-up 200ms ease;
+}
+
+@keyframes slide-up {
+  from { transform: translateY(12px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.modal__title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.modal__best {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.modal__restart-btn {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-bg);
+  background-color: var(--color-accent);
+  padding: 0.65rem 1.5rem;
+  border-radius: var(--radius-md);
+  transition: background-color var(--transition-fast);
+  align-self: flex-start;
+}
+
+.modal__restart-btn:hover {
+  background-color: var(--color-accent-hover);
+}
+
+.modal__hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+kbd {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
