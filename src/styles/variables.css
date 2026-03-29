@@ -1,0 +1,80 @@
+/* ─── Design tokens ─────────────────────────────────────────────────── */
+:root {
+  /* Typography */
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-sans: system-ui, -apple-system, sans-serif;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+  --font-size-sm: 0.875rem;
+  --font-size-xs: 0.75rem;
+
+  /* Layout */
+  --max-width: 860px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Transitions */
+  --transition-fast: 80ms ease;
+  --transition-base: 150ms ease;
+}
+
+/* ─── Dark theme (default) ──────────────────────────────────────────── */
+[data-theme='dark'] {
+  --color-bg: #1a1b26;
+  --color-surface: #24283b;
+  --color-surface-alt: #2f3549;
+  --color-border: #3b4261;
+
+  --color-text-primary: #c0caf5;
+  --color-text-secondary: #565f89;
+  --color-text-muted: #3b4261;
+
+  /* Typing char states */
+  --color-char-pending: #565f89;
+  --color-char-correct: #9ece6a;
+  --color-char-incorrect: #f7768e;
+  --color-char-current: #c0caf5;
+  --color-char-current-bg: #2f3549;
+
+  /* Accent */
+  --color-accent: #7aa2f7;
+  --color-accent-hover: #89b4fa;
+  --color-accent-muted: #2f3549;
+
+  /* Timer */
+  --color-timer-active: #7aa2f7;
+  --color-timer-warning: #e0af68;
+  --color-timer-danger: #f7768e;
+}
+
+/* ─── Light theme ───────────────────────────────────────────────────── */
+[data-theme='light'] {
+  --color-bg: #f8f8f2;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f0f0f0;
+  --color-border: #d0d0d0;
+
+  --color-text-primary: #383a42;
+  --color-text-secondary: #9a9ba0;
+  --color-text-muted: #c8c8c8;
+
+  /* Typing char states */
+  --color-char-pending: #9a9ba0;
+  --color-char-correct: #50a14f;
+  --color-char-incorrect: #e45649;
+  --color-char-current: #383a42;
+  --color-char-current-bg: #e8e8e8;
+
+  /* Accent */
+  --color-accent: #4078f2;
+  --color-accent-hover: #2c5bb8;
+  --color-accent-muted: #e8efff;
+
+  /* Timer */
+  --color-timer-active: #4078f2;
+  --color-timer-warning: #c18401;
+  --color-timer-danger: #e45649;
+}

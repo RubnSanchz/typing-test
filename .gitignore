@@ -1,0 +1,32 @@
+# Local prompt drafts and planning notes
+.github/prompts/
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+coverage/
+
+# Caches
+.cache/
+.vite/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
