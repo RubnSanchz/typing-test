@@ -147,12 +147,25 @@ jobs:
       - name: Ensure assets folder exists
         run: mkdir -p release-assets
 
-      - name: Validate release assets
+      - name: Validate and prepare release assets
+        id: assets
         shell: bash
         run: |
           ls -la release-assets
           test -n "$(find release-assets -maxdepth 1 -type f \( -name '*Setup*.exe' -o -name '*.msi' \) | head -n 1)"
           test -n "$(find release-assets -maxdepth 1 -type f -name '*Portable*.exe' | head -n 1)"
+
+          mapfile -t FILES < <(find release-assets -maxdepth 1 -type f \( -name '*.exe' -o -name '*.msi' -o -name '*.zip' -o -name '*.blockmap' \) | sort)
+          if [ "${#FILES[@]}" -eq 0 ]; then
+            echo "No release files found in release-assets"
+            exit 1
+          fi
+
+          {
+            echo "files<<EOF"
+            printf '%s\n' "${FILES[@]}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -168,9 +181,5 @@ jobs:
             Downloads:
             - Windows Installer: archivo con nombre TypingTest-Setup-<version>.exe
             - Windows Portable: archivo con nombre TypingTest-Portable-<version>.exe
-          files: |
-            release-assets/*.exe
-            release-assets/*.msi
-            release-assets/*.zip
-            release-assets/*.blockmap
+          files: ${{ steps.assets.outputs.files }}
           fail_on_unmatched_files: true
