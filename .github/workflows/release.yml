@@ -36,7 +36,7 @@ jobs:
         run: npm ci
 
       - name: Build web app
-        run: npm run build
+        run: npm run build:web
 
       - name: Upload web artifact (for Pages)
         uses: actions/upload-pages-artifact@v3
@@ -89,20 +89,29 @@ jobs:
             throw "release folder was not created by desktop build"
           }
 
-          $setup = Get-ChildItem -Path release -Recurse -File -Include *Setup*.exe,*.msi
-          $portable = Get-ChildItem -Path release -Recurse -File -Include *Portable*.exe
+          $setupExe = Get-ChildItem -Path release -Recurse -File -Include *Setup*.exe | Select-Object -First 1
+          $setupMsi = Get-ChildItem -Path release -Recurse -File -Include *.msi | Select-Object -First 1
+          $portableExe = Get-ChildItem -Path release -Recurse -File -Include *Portable*.exe | Select-Object -First 1
 
-          if ($setup.Count -eq 0) {
+          $setup = $setupExe
+          if ($null -eq $setup) {
+            $setup = $setupMsi
+          }
+
+          if ($null -eq $setup) {
             throw "Installer artifact not found (expected Setup exe or msi)"
           }
 
-          if ($portable.Count -eq 0) {
+          if ($null -eq $portableExe) {
             throw "Portable artifact not found (expected Portable exe)"
           }
 
-          Get-ChildItem -Path release -Recurse -File -Include *.exe,*.msi,*.zip,*.blockmap | ForEach-Object {
-            Copy-Item $_.FullName -Destination artifacts -Force
-          }
+          Copy-Item $setup.FullName -Destination artifacts -Force
+          Copy-Item $portableExe.FullName -Destination artifacts -Force
+
+          Get-FileHash -Path artifacts\* -Algorithm SHA256 | ForEach-Object {
+            "$($_.Hash)  $($_.Path | Split-Path -Leaf)"
+          } | Set-Content -Path artifacts\checksums.txt
 
       - name: Upload desktop artifacts
         uses: actions/upload-artifact@v4
@@ -155,7 +164,7 @@ jobs:
           test -n "$(find release-assets -maxdepth 1 -type f \( -name '*Setup*.exe' -o -name '*.msi' \) | head -n 1)"
           test -n "$(find release-assets -maxdepth 1 -type f -name '*Portable*.exe' | head -n 1)"
 
-          mapfile -t FILES < <(find release-assets -maxdepth 1 -type f \( -name '*.exe' -o -name '*.msi' -o -name '*.zip' -o -name '*.blockmap' \) | sort)
+          mapfile -t FILES < <(find release-assets -maxdepth 1 -type f \( -name '*Setup*.exe' -o -name '*.msi' -o -name '*Portable*.exe' -o -name 'checksums.txt' \) | sort)
           if [ "${#FILES[@]}" -eq 0 ]; then
             echo "No release files found in release-assets"
             exit 1
@@ -181,5 +190,6 @@ jobs:
             Downloads:
             - Windows Installer: archivo con nombre TypingTest-Setup-<version>.exe
             - Windows Portable: archivo con nombre TypingTest-Portable-<version>.exe
+            - Verificacion: checksums.txt (SHA256)
           files: ${{ steps.assets.outputs.files }}
           fail_on_unmatched_files: true
