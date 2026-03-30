@@ -23,6 +23,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -44,6 +47,7 @@ jobs:
     name: Deploy Web to GitHub Pages
     runs-on: ubuntu-latest
     needs: web-build
+    continue-on-error: true
     outputs:
       page_url: ${{ steps.deployment.outputs.page_url }}
     environment:
@@ -110,6 +114,7 @@ jobs:
   publish-release:
     name: Publish GitHub Release
     runs-on: ubuntu-latest
+    if: ${{ always() && needs.desktop-build.result == 'success' }}
     needs:
       - deploy-web
       - desktop-build
@@ -123,8 +128,15 @@ jobs:
         run: |
           PKG_VERSION=$(node -p "require('./package.json').version")
           TAG="v${PKG_VERSION}-build.${GITHUB_RUN_NUMBER}"
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          DEFAULT_WEB_URL="https://${GITHUB_REPOSITORY_OWNER}.github.io/${REPO_NAME}/"
+          WEB_URL="${{ needs.deploy-web.outputs.page_url }}"
+          if [ -z "$WEB_URL" ]; then
+            WEB_URL="$DEFAULT_WEB_URL"
+          fi
           echo "pkg_version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "web_url=$WEB_URL" >> "$GITHUB_OUTPUT"
 
       - name: Download desktop artifacts
         uses: actions/download-artifact@v4
@@ -151,7 +163,7 @@ jobs:
           body: |
             Version: ${{ steps.version.outputs.pkg_version }}
             Commit: ${{ github.sha }}
-            Web URL: ${{ needs.deploy-web.outputs.page_url }}
+            Web URL: ${{ steps.version.outputs.web_url }}
             
             Downloads:
             - Windows Installer: archivo con nombre TypingTest-Setup-<version>.exe
