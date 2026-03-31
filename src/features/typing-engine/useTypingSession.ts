@@ -2,15 +2,16 @@ import { useReducer, useEffect, useCallback, useMemo, useRef } from 'react'
 import { typingReducer, createInitialSession } from './typingReducer'
 import { calcMetrics } from '@/utils/metrics'
 import { normalizeTextForTyping } from '@/utils/normalizeTextForTyping'
-import type { TypingMetrics } from '@/types/domain'
+import type { LanguageCode, TypingMetrics } from '@/types/domain'
 
 interface SessionOptions {
   duration: number
   ignorePunctuation: boolean
+  language: LanguageCode
 }
 
 export function useTypingSession(options: SessionOptions) {
-  const { duration, ignorePunctuation } = options
+  const { duration, ignorePunctuation, language } = options
   const [session, dispatch] = useReducer(typingReducer, options, createInitialSession)
 
   // Elapsed seconds tracked via requestAnimationFrame for smooth timer
@@ -95,10 +96,11 @@ export function useTypingSession(options: SessionOptions) {
         payload: {
           duration: nextOptions?.duration ?? duration,
           ignorePunctuation: nextOptions?.ignorePunctuation ?? ignorePunctuation,
+          language: nextOptions?.language ?? language,
         },
       })
     },
-    [duration, ignorePunctuation],
+    [duration, ignorePunctuation, language],
   )
 
   return { session, metrics, timeLeft, handleInput, reset } as const

@@ -20,8 +20,15 @@ export interface WordState {
 // A text passage from the data catalogue
 export interface TextPassage {
   id: string
-  lang: 'es'
+  lang: LanguageCode
   text: string
+}
+
+export type LanguageCode = 'es' | 'en' | 'fr'
+
+export interface UserProfile {
+  id: string
+  name: string
 }
 
 // Accumulated keystroke tracking
@@ -73,4 +80,5 @@ export interface HistoryStats {
 export interface UserPreferences {
   duration: number   // seconds
   ignorePunctuation: boolean
+  language: LanguageCode
 }

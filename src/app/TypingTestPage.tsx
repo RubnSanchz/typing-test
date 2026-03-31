@@ -1,6 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useTypingSession } from '@/features/typing-engine/useTypingSession'
-import { useSettings } from '@/features/settings/useSettings'
+import type { DURATION_OPTIONS } from '@/features/settings/useSettings'
 import { useHistory } from '@/features/stats/useHistory'
 import { TextDisplay } from '@/components/TextDisplay/TextDisplay'
 import { TypingInput } from '@/components/TypingInput/TypingInput'
@@ -8,15 +8,34 @@ import { TimerPanel } from '@/components/TimerPanel/TimerPanel'
 import { StatsPanel } from '@/components/StatsPanel/StatsPanel'
 import { HistoryPanel } from '@/components/HistoryPanel/HistoryPanel'
 import { ResultsModal } from '@/components/ResultsModal/ResultsModal'
+import type { LanguageCode, UserPreferences } from '@/types/domain'
 import './TypingTestPage.css'
 
-export function TypingTestPage() {
-  const { prefs, setDuration, setIgnorePunctuation, durationOptions } = useSettings()
+interface Props {
+  profileId: string
+  profileName: string
+  prefs: UserPreferences
+  setDuration: (duration: number) => void
+  setIgnorePunctuation: (value: boolean) => void
+  durationOptions: typeof DURATION_OPTIONS
+}
+
+export function TypingTestPage({
+  profileId,
+  profileName,
+  prefs,
+  setDuration,
+  setIgnorePunctuation,
+  durationOptions,
+}: Props) {
   const { session, metrics, timeLeft, handleInput, reset } = useTypingSession({
     duration: prefs.duration,
     ignorePunctuation: prefs.ignorePunctuation,
+    language: prefs.language,
   })
-  const { stats, best, saveResult, clearHistory } = useHistory()
+  const { stats, best, saveResult, clearHistory } = useHistory(profileId)
+  const lastLanguageRef = useRef<LanguageCode>(prefs.language)
+  const lastProfileRef = useRef<string>(profileId)
 
   // Save record when session finishes
   useEffect(() => {
@@ -38,14 +57,36 @@ export function TypingTestPage() {
     return () => window.removeEventListener('keydown', handler)
   }, [])
 
+  // Reload passage when language changes from the header selector.
+  useEffect(() => {
+    if (lastLanguageRef.current === prefs.language) return
+    lastLanguageRef.current = prefs.language
+    reset({
+      duration: prefs.duration,
+      ignorePunctuation: prefs.ignorePunctuation,
+      language: prefs.language,
+    })
+  }, [prefs.duration, prefs.ignorePunctuation, prefs.language, reset])
+
+  useEffect(() => {
+    if (lastProfileRef.current === profileId) return
+    lastProfileRef.current = profileId
+    lastLanguageRef.current = prefs.language
+    reset({
+      duration: prefs.duration,
+      ignorePunctuation: prefs.ignorePunctuation,
+      language: prefs.language,
+    })
+  }, [profileId, prefs.duration, prefs.ignorePunctuation, prefs.language, reset])
+
   const handleChangeDuration = (d: number) => {
     setDuration(d)
-    reset({ duration: d, ignorePunctuation: prefs.ignorePunctuation })
+    reset({ duration: d, ignorePunctuation: prefs.ignorePunctuation, language: prefs.language })
   }
 
   const handleToggleIgnorePunctuation = (value: boolean) => {
     setIgnorePunctuation(value)
-    reset({ duration: prefs.duration, ignorePunctuation: value })
+    reset({ duration: prefs.duration, ignorePunctuation: value, language: prefs.language })
   }
 
   return (
@@ -77,14 +118,18 @@ export function TypingTestPage() {
         <button
           className="test-page__restart-btn"
           onClick={() =>
-            reset({ duration: prefs.duration, ignorePunctuation: prefs.ignorePunctuation })
+            reset({
+              duration: prefs.duration,
+              ignorePunctuation: prefs.ignorePunctuation,
+              language: prefs.language,
+            })
           }
         >
           Reiniciar ahora
         </button>
       </div>
 
-      <HistoryPanel stats={stats} onClear={clearHistory} />
+      <HistoryPanel stats={stats} onClear={clearHistory} profileName={profileName} />
 
       <div className="test-page__hint">
         {session.status === 'idle' && 'Empieza a escribir para iniciar el test'}
@@ -97,7 +142,11 @@ export function TypingTestPage() {
           metrics={metrics}
           best={best}
           onRestart={() =>
-            reset({ duration: prefs.duration, ignorePunctuation: prefs.ignorePunctuation })
+            reset({
+              duration: prefs.duration,
+              ignorePunctuation: prefs.ignorePunctuation,
+              language: prefs.language,
+            })
           }
         />
       )}
