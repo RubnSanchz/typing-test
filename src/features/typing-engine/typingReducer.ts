@@ -1,6 +1,6 @@
-import type { TypingSession, WordState, CharState } from '@/types/domain'
+import type { TypingSession, WordState, CharState, LanguageCode } from '@/types/domain'
 import { buildWordStates } from '@/utils/buildWordStates'
-import { getRandomPassage } from '@/data/texts/es'
+import { getRandomPassageByLanguage } from '@/data/texts'
 import { normalizeTextForTyping } from '@/utils/normalizeTextForTyping'
 
 // ─── Actions ──────────────────────────────────────────────────────────────────
@@ -9,16 +9,20 @@ export type TypingAction =
   | { type: 'INPUT_CHANGE'; payload: string }
   | { type: 'WORD_SUBMIT' }
   | { type: 'FINISH' }
-  | { type: 'RESET'; payload?: { duration?: number; ignorePunctuation?: boolean } }
+  | {
+      type: 'RESET'
+      payload?: { duration?: number; ignorePunctuation?: boolean; language?: LanguageCode }
+    }
 
 // ─── Initial state ────────────────────────────────────────────────────────────
 
 export function createInitialSession(config: {
   duration: number
   ignorePunctuation: boolean
+  language: LanguageCode
 }): TypingSession {
-  const { duration, ignorePunctuation } = config
-  const passage = getRandomPassage()
+  const { duration, ignorePunctuation, language } = config
+  const passage = getRandomPassageByLanguage(language)
   const normalizedPassage = {
     ...passage,
     text: ignorePunctuation ? normalizeTextForTyping(passage.text) : passage.text,
@@ -172,6 +176,7 @@ export function typingReducer(state: TypingSession, action: TypingAction): Typin
       return createInitialSession({
         duration: action.payload?.duration ?? state.duration,
         ignorePunctuation: action.payload?.ignorePunctuation ?? state.ignorePunctuation,
+        language: action.payload?.language ?? state.passage.lang,
       })
     }
 

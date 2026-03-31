@@ -1,10 +1,14 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { BestResult, HistoryStats, TypingMetrics } from '@/types/domain'
 
 const STORAGE_KEY = 'tt-history'
 const LEGACY_BEST_KEY = 'tt-best'
 
-function loadHistory(): HistoryStats {
+function keyForProfile(profileId: string): string {
+  return `${STORAGE_KEY}-${profileId}`
+}
+
+function loadHistory(profileId: string): HistoryStats {
   const fallback: HistoryStats = {
     totalTests: 0,
     averageWpm: 0,
@@ -14,7 +18,7 @@ function loadHistory(): HistoryStats {
   }
 
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(keyForProfile(profileId))
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<HistoryStats>
       return {
@@ -44,11 +48,15 @@ function loadHistory(): HistoryStats {
   }
 }
 
-export function useHistory() {
-  const [stats, setStats] = useState<HistoryStats>(loadHistory)
+export function useHistory(profileId: string) {
+  const [stats, setStats] = useState<HistoryStats>(() => loadHistory(profileId))
+
+  useEffect(() => {
+    setStats(loadHistory(profileId))
+  }, [profileId])
 
   const saveResult = useCallback((metrics: TypingMetrics, duration: number) => {
-    const current = loadHistory()
+    const current = loadHistory(profileId)
     const nextTotal = current.totalTests + 1
 
     const nextAverageWpm =
@@ -77,9 +85,9 @@ export function useHistory() {
       best: nextBest,
     }
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+    localStorage.setItem(keyForProfile(profileId), JSON.stringify(next))
     setStats(next)
-  }, [])
+  }, [profileId])
 
   const clearHistory = useCallback(() => {
     const empty: HistoryStats = {
@@ -89,9 +97,9 @@ export function useHistory() {
       maxAccuracy: 0,
       best: null,
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(empty))
+    localStorage.setItem(keyForProfile(profileId), JSON.stringify(empty))
     setStats(empty)
-  }, [])
+  }, [profileId])
 
   return {
     stats,
