@@ -1,73 +1,71 @@
-# React + TypeScript + Vite
+# Typing Test
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A timed typing-speed trainer built with React, TypeScript, and Vite. Available as a web app and as a cross-platform desktop app via Electron.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Timed tests** — choose between 15 s, 30 s, or 60 s sessions.
+- **Multilingual passages** — practice in Spanish, English, or French.
+- **Real-time feedback** — each character is highlighted as correct, incorrect, or pending while you type.
+- **Live metrics** — WPM (gross and net), accuracy, and error count are computed after every session.
+- **Results modal** — a summary is shown at the end of each test.
+- **Session history** — per-profile stats (total tests, average WPM, average accuracy, personal best) are persisted in `localStorage`.
+- **Multiple profiles** — create, rename, and delete user profiles; each profile keeps its own settings and history.
+- **Ignore-punctuation mode** — optionally strip punctuation from passages before the test.
+- **Dark / light theme** — toggleable, with system-preference detection as the default.
 
-## React Compiler
+## Tech stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Layer | Technology |
+|---|---|
+| UI | React 19, TypeScript |
+| Bundler | Vite |
+| Desktop shell | Electron |
+| State | `useReducer` + custom hooks |
+| Persistence | `localStorage` |
+| Lint / format | ESLint, Prettier |
 
-## Expanding the ESLint configuration
+## Getting started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Web (dev server)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+npm run dev
+```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Desktop (Electron)
+
+```bash
+npm run desktop:start
+```
+
+## Building
+
+| Command | Output |
+|---|---|
+| `npm run build` | Web build (for GitHub Pages at `/typing-test/`) |
+| `npm run build:desktop` | Desktop build |
+| `npm run dist:win` | Windows NSIS installer |
+| `npm run dist:portable` | Windows portable executable |
+| `npm run dist:all` | Both NSIS installer and portable |
+
+## Project structure
+
+```
+src/
+  app/              # Root App component and main page
+  components/       # UI components (AppShell, TextDisplay, TimerPanel, …)
+  data/texts/       # Text passages per language (es, en, fr)
+  features/
+    typing-engine/  # Core reducer and session hook
+    settings/       # User preferences and profile management
+    stats/          # History persistence
+    theme/          # Dark/light theme hook
+  types/            # Shared TypeScript domain types
+  utils/            # Metrics calculation, word-state builder, text normalizer
+electron/           # Electron main process and preload script
 ```
