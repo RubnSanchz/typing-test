@@ -4,13 +4,14 @@ import './HistoryPanel.css'
 interface Props {
   stats: HistoryStats
   onClear: () => void
+  profileName: string
 }
 
-export function HistoryPanel({ stats, onClear }: Props) {
+export function HistoryPanel({ stats, onClear, profileName }: Props) {
   return (
     <section className="history" aria-label="Historial local">
       <div className="history__header">
-        <h3>Historial local</h3>
+        <h3>Historial local · {profileName}</h3>
         {stats.totalTests > 0 && (
           <button className="history__clear" onClick={onClear}>
             Borrar
