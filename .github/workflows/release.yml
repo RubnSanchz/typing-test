@@ -130,13 +130,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Compute release version
         id: version
         shell: bash
         run: |
           PKG_VERSION=$(node -p "require('./package.json').version")
-          TAG="v${PKG_VERSION}-build.${GITHUB_RUN_NUMBER}"
+          TAG="v${PKG_VERSION}"
           REPO_NAME="${GITHUB_REPOSITORY#*/}"
           DEFAULT_WEB_URL="https://${GITHUB_REPOSITORY_OWNER}.github.io/${REPO_NAME}/"
           WEB_URL="${{ needs.deploy-web.outputs.page_url }}"
@@ -193,3 +195,19 @@ jobs:
             - Verificacion: checksums.txt (SHA256)
           files: ${{ steps.assets.outputs.files }}
           fail_on_unmatched_files: true
+
+      - name: Setup Node for version bump
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Bump patch version and commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          npm version patch --no-git-tag-version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          git add package.json package-lock.json
+          git commit -m "chore: bump version to ${NEW_VERSION} [skip ci]"
+          git push
