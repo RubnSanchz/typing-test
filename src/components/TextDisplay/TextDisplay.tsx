@@ -6,11 +6,12 @@ import './TextDisplay.css'
 interface Props {
   words: WordState[]
   currentWordIndex: number
+  ariaLabel: string
 }
 
-export const TextDisplay = memo(function TextDisplay({ words, currentWordIndex }: Props) {
+export const TextDisplay = memo(function TextDisplay({ words, currentWordIndex, ariaLabel }: Props) {
   return (
-    <div className="text-display" aria-label="Texto objetivo" aria-live="off">
+    <div className="text-display" aria-label={ariaLabel} aria-live="off">
       {words.map((word, wi) => (
         <span
           key={wi}

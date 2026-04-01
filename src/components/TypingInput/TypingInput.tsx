@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import type { TypingInputCopy } from '@/data/uiCopy'
 import './TypingInput.css'
 
 interface Props {
@@ -6,9 +7,10 @@ interface Props {
   onChange: (value: string) => void
   disabled: boolean
   onFocus?: () => void
+  copy: TypingInputCopy
 }
 
-export function TypingInput({ value, onChange, disabled, onFocus }: Props) {
+export function TypingInput({ value, onChange, disabled, onFocus, copy }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Auto-focus on mount and re-focus when disabled resets to false
@@ -31,8 +33,8 @@ export function TypingInput({ value, onChange, disabled, onFocus }: Props) {
       autoCorrect="off"
       autoCapitalize="none"
       spellCheck={false}
-      aria-label="Área de escritura"
-      placeholder={disabled ? '' : 'Empieza a escribir…'}
+      aria-label={copy.ariaLabel}
+      placeholder={disabled ? '' : copy.placeholder}
     />
   )
 }

@@ -1,18 +1,20 @@
 import type { TypingMetrics } from '@/types/domain'
+import type { StatsPanelCopy } from '@/data/uiCopy'
 import './StatsPanel.css'
 
 interface Props {
   metrics: TypingMetrics
   live?: boolean
+  copy: StatsPanelCopy
 }
 
-export function StatsPanel({ metrics, live = false }: Props) {
+export function StatsPanel({ metrics, live = false, copy }: Props) {
   return (
-    <div className="stats" aria-label={live ? 'Estadísticas en vivo' : 'Resultados'}>
-      <Stat label="WPM" value={metrics.wpmNet} />
-      <Stat label="Bruto" value={metrics.wpmGross} small />
-      <Stat label="Precisión" value={`${metrics.accuracy}%`} />
-      <Stat label="Errores" value={metrics.errors} />
+    <div className="stats" aria-label={live ? copy.ariaLive : copy.ariaResults}>
+      <Stat label={copy.wpmNetLabel} value={metrics.wpmNet} />
+      <Stat label={copy.wpmGrossLabel} value={metrics.wpmGross} small />
+      <Stat label={copy.accuracyLabel} value={`${metrics.accuracy}%`} />
+      <Stat label={copy.errorsLabel} value={metrics.errors} />
     </div>
   )
 }
