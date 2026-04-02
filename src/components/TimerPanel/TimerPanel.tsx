@@ -1,5 +1,6 @@
 import clsx from 'clsx'
 import type { DURATION_OPTIONS } from '@/features/settings/useSettings'
+import type { TimerPanelCopy } from '@/data/uiCopy'
 import './TimerPanel.css'
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
   ignorePunctuation: boolean
   onToggleIgnorePunctuation: (value: boolean) => void
   status: 'idle' | 'running' | 'finished'
+  copy: TimerPanelCopy
 }
 
 export function TimerPanel({
@@ -20,6 +22,7 @@ export function TimerPanel({
   ignorePunctuation,
   onToggleIgnorePunctuation,
   status,
+  copy,
 }: Props) {
   const pct = timeLeft / duration
   const timerClass = clsx('timer__value', {
@@ -33,7 +36,7 @@ export function TimerPanel({
 
       {status === 'idle' && (
         <>
-          <div className="timer__options" role="group" aria-label="Duración del test">
+          <div className="timer__options" role="group" aria-label={copy.durationGroupAria}>
             {durationOptions.map((d) => (
               <button
                 key={d}
@@ -45,18 +48,18 @@ export function TimerPanel({
             ))}
           </div>
 
-          <div className="timer__options" role="group" aria-label="Signos de puntuación">
+          <div className="timer__options" role="group" aria-label={copy.punctuationGroupAria}>
             <button
               className={clsx('timer__option', { 'timer__option--active': ignorePunctuation })}
               onClick={() => onToggleIgnorePunctuation(true)}
             >
-              Sin signos
+              {copy.punctuationOff}
             </button>
             <button
               className={clsx('timer__option', { 'timer__option--active': !ignorePunctuation })}
               onClick={() => onToggleIgnorePunctuation(false)}
             >
-              Con signos
+              {copy.punctuationOn}
             </button>
           </div>
         </>
