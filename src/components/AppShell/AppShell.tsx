@@ -98,7 +98,9 @@ export function AppShell({
               <option value="en">{copy.languageOptions.en}</option>
               <option value="fr">{copy.languageOptions.fr}</option>
             </select>
+          </div>
 
+          <div className="shell__controls-group shell__controls-group--theme">
             <button
               className="shell__theme-btn"
               onClick={onToggleTheme}
