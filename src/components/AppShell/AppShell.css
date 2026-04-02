@@ -26,9 +26,20 @@
 .shell__controls {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 1rem;
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+.shell__controls-group {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.shell__controls-group--language,
+.shell__controls-group--theme {
+  padding-left: 1.8rem;
 }
 
 .shell__language-label {

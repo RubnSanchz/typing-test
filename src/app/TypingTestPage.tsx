@@ -8,6 +8,7 @@ import { TimerPanel } from '@/components/TimerPanel/TimerPanel'
 import { StatsPanel } from '@/components/StatsPanel/StatsPanel'
 import { HistoryPanel } from '@/components/HistoryPanel/HistoryPanel'
 import { ResultsModal } from '@/components/ResultsModal/ResultsModal'
+import type { UiCopy } from '@/data/uiCopy'
 import type { LanguageCode, UserPreferences } from '@/types/domain'
 import './TypingTestPage.css'
 
@@ -18,6 +19,7 @@ interface Props {
   setDuration: (duration: number) => void
   setIgnorePunctuation: (value: boolean) => void
   durationOptions: typeof DURATION_OPTIONS
+  ui: UiCopy
 }
 
 export function TypingTestPage({
@@ -27,6 +29,7 @@ export function TypingTestPage({
   setDuration,
   setIgnorePunctuation,
   durationOptions,
+  ui,
 }: Props) {
   const { session, metrics, timeLeft, handleInput, reset } = useTypingSession({
     duration: prefs.duration,
@@ -100,18 +103,24 @@ export function TypingTestPage({
           ignorePunctuation={prefs.ignorePunctuation}
           onToggleIgnorePunctuation={handleToggleIgnorePunctuation}
           status={session.status}
+          copy={ui.timerPanel}
         />
         {session.status === 'running' && (
-          <StatsPanel metrics={metrics} live />
+          <StatsPanel metrics={metrics} live copy={ui.statsPanel} />
         )}
       </div>
 
-      <TextDisplay words={session.words} currentWordIndex={session.currentWordIndex} />
+      <TextDisplay
+        words={session.words}
+        currentWordIndex={session.currentWordIndex}
+        ariaLabel={ui.typingPage.textDisplayAria}
+      />
 
       <TypingInput
         value={session.currentInput}
         onChange={handleInput}
         disabled={session.status === 'finished'}
+        copy={ui.typingInput}
       />
 
       <div className="test-page__actions">
@@ -125,14 +134,14 @@ export function TypingTestPage({
             })
           }
         >
-          Reiniciar ahora
+          {ui.typingPage.restartNow}
         </button>
       </div>
 
-      <HistoryPanel stats={stats} onClear={clearHistory} profileName={profileName} />
+      <HistoryPanel stats={stats} onClear={clearHistory} profileName={profileName} copy={ui.historyPanel} />
 
       <div className="test-page__hint">
-        {session.status === 'idle' && 'Empieza a escribir para iniciar el test'}
+        {session.status === 'idle' && ui.typingPage.startHint}
         {session.status === 'running' && ' '}
         {session.status === 'finished' && ' '}
       </div>
@@ -141,6 +150,7 @@ export function TypingTestPage({
         <ResultsModal
           metrics={metrics}
           best={best}
+          copy={ui}
           onRestart={() =>
             reset({
               duration: prefs.duration,
