@@ -5,12 +5,16 @@ export interface ShellCopy {
   profileSelectorAria: string
   createProfileAria: string
   createProfileTitle: string
+  createProfileText: string
   renameProfileAria: string
   renameProfileTitle: string
   renameProfileText: string
   deleteProfileAria: string
   deleteProfileTitle: string
   deleteProfileText: string
+  profileNamePlaceholder: string
+  saveProfileText: string
+  cancelProfileText: string
   languageLabel: string
   languageSelectorAria: string
   themeSwitchAria: (nextThemeName: string) => string
@@ -58,11 +62,21 @@ export interface HistoryPanelCopy {
   sectionAria: string
   title: string
   clear: string
+  details: string
+  detailsTitle: string
+  detailsHint: string
+  close: string
+  modeLabel: string
   empty: string
+  noData: string
+  languageHeader: string
   testsLabel: string
   bestWpmLabel: string
   bestAccuracyLabel: string
   averageWpmLabel: string
+  punctuationOffShort: string
+  punctuationOnShort: string
+  languageOptions: Record<LanguageCode, string>
 }
 
 interface ResultsModalCopy {
@@ -98,12 +112,16 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
       profileSelectorAria: 'Seleccionar perfil',
       createProfileAria: 'Crear perfil',
       createProfileTitle: 'Nuevo perfil',
+      createProfileText: 'Nuevo',
       renameProfileAria: 'Editar nombre de perfil',
       renameProfileTitle: 'Editar perfil',
       renameProfileText: 'Editar',
       deleteProfileAria: 'Borrar perfil',
       deleteProfileTitle: 'Borrar perfil',
       deleteProfileText: 'Borrar',
+      profileNamePlaceholder: 'Nombre del perfil',
+      saveProfileText: 'Guardar',
+      cancelProfileText: 'Cancelar',
       languageLabel: 'Idioma',
       languageSelectorAria: 'Seleccionar idioma',
       themeSwitchAria: (nextThemeName: string) => `Cambiar a tema ${nextThemeName}`,
@@ -144,11 +162,25 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
       sectionAria: 'Historial local',
       title: 'Historial local',
       clear: 'Borrar',
-      empty: 'Aun no hay tests guardados.',
+      details: 'Más info',
+      detailsTitle: 'Desglose por idioma y modo',
+      detailsHint: 'Pulsa una celda para cambiar a ese modo.',
+      close: 'Cerrar',
+      modeLabel: 'Modo actual',
+      empty: 'Aun no hay tests guardados para esta combinación.',
+      noData: 'Sin datos',
+      languageHeader: 'Idioma',
       testsLabel: 'Tests',
       bestWpmLabel: 'WPM max',
       bestAccuracyLabel: 'Precision max',
       averageWpmLabel: 'WPM medio',
+      punctuationOffShort: 'Sin',
+      punctuationOnShort: 'Con',
+      languageOptions: {
+        es: 'Español',
+        en: 'Inglés',
+        fr: 'Francés',
+      },
     },
     resultsModal: {
       dialogAria: 'Resultados',
@@ -171,12 +203,16 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
       profileSelectorAria: 'Select profile',
       createProfileAria: 'Create profile',
       createProfileTitle: 'New profile',
+      createProfileText: 'New',
       renameProfileAria: 'Edit profile name',
       renameProfileTitle: 'Edit profile',
       renameProfileText: 'Edit',
       deleteProfileAria: 'Delete profile',
       deleteProfileTitle: 'Delete profile',
       deleteProfileText: 'Delete',
+      profileNamePlaceholder: 'Profile name',
+      saveProfileText: 'Save',
+      cancelProfileText: 'Cancel',
       languageLabel: 'Language',
       languageSelectorAria: 'Select language',
       themeSwitchAria: (nextThemeName: string) => `Switch to ${nextThemeName} theme`,
@@ -217,11 +253,25 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
       sectionAria: 'Local history',
       title: 'Local history',
       clear: 'Clear',
-      empty: 'No saved tests yet.',
+      details: 'More info',
+      detailsTitle: 'Breakdown by language and mode',
+      detailsHint: 'Click any cell to switch to that mode.',
+      close: 'Close',
+      modeLabel: 'Current mode',
+      empty: 'No saved tests yet for this combination.',
+      noData: 'No data',
+      languageHeader: 'Language',
       testsLabel: 'Tests',
       bestWpmLabel: 'Best WPM',
       bestAccuracyLabel: 'Best accuracy',
       averageWpmLabel: 'Average WPM',
+      punctuationOffShort: 'Off',
+      punctuationOnShort: 'On',
+      languageOptions: {
+        es: 'Spanish',
+        en: 'English',
+        fr: 'French',
+      },
     },
     resultsModal: {
       dialogAria: 'Results',
@@ -244,12 +294,16 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
       profileSelectorAria: 'Selectionner un profil',
       createProfileAria: 'Creer un profil',
       createProfileTitle: 'Nouveau profil',
+      createProfileText: 'Nouveau',
       renameProfileAria: 'Modifier le nom du profil',
       renameProfileTitle: 'Modifier le profil',
       renameProfileText: 'Modifier',
       deleteProfileAria: 'Supprimer le profil',
       deleteProfileTitle: 'Supprimer le profil',
       deleteProfileText: 'Supprimer',
+      profileNamePlaceholder: 'Nom du profil',
+      saveProfileText: 'Enregistrer',
+      cancelProfileText: 'Annuler',
       languageLabel: 'Langue',
       languageSelectorAria: 'Selectionner la langue',
       themeSwitchAria: (nextThemeName: string) => `Passer au theme ${nextThemeName}`,
@@ -290,11 +344,25 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
       sectionAria: 'Historique local',
       title: 'Historique local',
       clear: 'Effacer',
-      empty: 'Aucun test enregistre pour le moment.',
+      details: 'Plus d\'infos',
+      detailsTitle: 'Detail par langue et mode',
+      detailsHint: 'Clique sur une case pour changer de mode.',
+      close: 'Fermer',
+      modeLabel: 'Mode actuel',
+      empty: 'Aucun test enregistre pour cette combinaison.',
+      noData: 'Sans donnees',
+      languageHeader: 'Langue',
       testsLabel: 'Tests',
       bestWpmLabel: 'MPM max',
       bestAccuracyLabel: 'Precision max',
       averageWpmLabel: 'MPM moyen',
+      punctuationOffShort: 'Sans',
+      punctuationOnShort: 'Avec',
+      languageOptions: {
+        es: 'Espagnol',
+        en: 'Anglais',
+        fr: 'Francais',
+      },
     },
     resultsModal: {
       dialogAria: 'Resultats',

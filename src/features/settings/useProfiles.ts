@@ -4,11 +4,25 @@ import type { UserProfile } from '@/types/domain'
 const STORAGE_KEY = 'tt-profiles'
 const ACTIVE_KEY = 'tt-active-profile'
 
-const DEFAULT_PROFILES: UserProfile[] = [
-  { id: 'default', name: 'Perfil por defecto' },
-]
+const DEFAULT_PROFILES: UserProfile[] = [{ id: 'default', name: 'Perfil por defecto' }]
 
 const LEGACY_DEFAULT_IDS = new Set(['person-default', 'keyboard-laptop'])
+
+function readStorage(key: string): string | null {
+  try {
+    return localStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+function writeStorage(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    // Ignore storage write failures so the in-memory profile flow keeps working.
+  }
+}
 
 function sanitizeName(name: string): string {
   return name
@@ -20,14 +34,16 @@ function sanitizeName(name: string): string {
 
 function loadProfiles(): UserProfile[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = readStorage(STORAGE_KEY)
     if (!raw) return DEFAULT_PROFILES
+
     const parsed = JSON.parse(raw) as Array<UserProfile & { kind?: unknown }>
     if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_PROFILES
 
     const validProfiles = parsed
       .filter((item) => item?.id && item?.name)
-      .map((item) => ({ id: item.id, name: item.name }))
+      .map((item) => ({ id: item.id, name: item.name.trim() }))
+      .filter((item) => item.name.length > 0)
 
     if (validProfiles.length === 0) return DEFAULT_PROFILES
 
@@ -45,8 +61,8 @@ function loadProfiles(): UserProfile[] {
 }
 
 function loadActiveProfileId(profiles: UserProfile[]): string {
-  const stored = localStorage.getItem(ACTIVE_KEY)
-  if (stored && profiles.some((p) => p.id === stored)) return stored
+  const stored = readStorage(ACTIVE_KEY)
+  if (stored && profiles.some((profile) => profile.id === stored)) return stored
   return profiles[0]?.id ?? DEFAULT_PROFILES[0].id
 }
 
@@ -58,12 +74,12 @@ export function useProfiles() {
   })
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles))
+    writeStorage(STORAGE_KEY, JSON.stringify(profiles))
   }, [profiles])
 
   useEffect(() => {
     if (profiles.some((profile) => profile.id === activeProfileId)) {
-      localStorage.setItem(ACTIVE_KEY, activeProfileId)
+      writeStorage(ACTIVE_KEY, activeProfileId)
     }
   }, [activeProfileId, profiles])
 
@@ -72,48 +88,59 @@ export function useProfiles() {
     [activeProfileId, profiles],
   )
 
+  const nameExists = (name: string, excludedProfileId?: string) => {
+    const normalized = name.trim().toLocaleLowerCase()
+    return profiles.some(
+      (profile) => profile.id !== excludedProfileId && profile.name.trim().toLocaleLowerCase() === normalized,
+    )
+  }
+
   const createProfile = (name: string) => {
-    const trimmed = name.trim()
-    if (!trimmed) return
+    const trimmed = name.trim().slice(0, 32)
+    if (!trimmed || nameExists(trimmed)) return false
 
     const idBase = sanitizeName(trimmed) || 'perfil'
     let id = idBase
     let suffix = 1
-    while (profiles.some((p) => p.id === id)) {
+
+    while (profiles.some((profile) => profile.id === id)) {
       suffix += 1
       id = `${idBase}-${suffix}`
     }
 
-    const profile: UserProfile = {
-      id,
-      name: trimmed,
-    }
+    const profile: UserProfile = { id, name: trimmed }
 
     setProfiles((prev) => [...prev, profile])
     setActiveProfileId(id)
+    return true
   }
 
   const renameProfile = (profileId: string, name: string) => {
-    const trimmed = name.trim()
-    if (!trimmed) return
-    setProfiles((prev) => prev.map((profile) => (profile.id === profileId ? { ...profile, name: trimmed } : profile)))
+    const trimmed = name.trim().slice(0, 32)
+    if (!trimmed || nameExists(trimmed, profileId)) return false
+
+    setProfiles((prev) =>
+      prev.map((profile) => (profile.id === profileId ? { ...profile, name: trimmed } : profile)),
+    )
+
+    return true
   }
 
   const deleteProfile = (profileId: string) => {
-    setProfiles((prev) => {
-      const next = prev.filter((profile) => profile.id !== profileId)
-      if (next.length === 0) {
-        const fallback = DEFAULT_PROFILES[0]
-        setActiveProfileId(fallback.id)
-        return [fallback]
-      }
+    const nextProfiles = profiles.filter((profile) => profile.id !== profileId)
 
-      if (activeProfileId === profileId) {
-        setActiveProfileId(next[0].id)
-      }
+    if (nextProfiles.length === 0) {
+      const fallback = DEFAULT_PROFILES[0]
+      setProfiles([fallback])
+      setActiveProfileId(fallback.id)
+      return
+    }
 
-      return next
-    })
+    setProfiles(nextProfiles)
+
+    if (activeProfileId === profileId) {
+      setActiveProfileId(nextProfiles[0].id)
+    }
   }
 
   const selectProfile = (profileId: string) => {

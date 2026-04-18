@@ -77,6 +77,16 @@ export interface HistoryStats {
   best: BestResult | null
 }
 
+export interface HistoryMode {
+  language: LanguageCode
+  duration: number
+  ignorePunctuation: boolean
+}
+
+export interface HistoryModeEntry extends HistoryMode {
+  stats: HistoryStats
+}
+
 export interface UserPreferences {
   duration: number   // seconds
   ignorePunctuation: boolean

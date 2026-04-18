@@ -8,20 +8,12 @@ import { TypingTestPage } from './TypingTestPage'
 export function App() {
   const { theme, toggle } = useTheme()
   const { profiles, activeProfile, selectProfile, createProfile, renameProfile, deleteProfile } = useProfiles()
-  const { prefs, setDuration, setIgnorePunctuation, setLanguage, durationOptions } = useSettings(activeProfile.id)
+  const { prefs, setDuration, setIgnorePunctuation, setLanguage, setPreferences, durationOptions } = useSettings(activeProfile.id)
   const ui = getUiCopy(prefs.language)
 
-  const handleCreateProfile = () => {
-    const name = window.prompt(ui.app.promptNewProfile)
-    if (!name) return
-    createProfile(name)
-  }
+  const handleCreateProfile = (name: string) => createProfile(name)
 
-  const handleRenameProfile = () => {
-    const name = window.prompt(ui.app.promptRenameProfile, activeProfile.name)
-    if (!name) return
-    renameProfile(activeProfile.id, name)
-  }
+  const handleRenameProfile = (profileId: string, name: string) => renameProfile(profileId, name)
 
   const handleDeleteProfile = () => {
     const confirmed = window.confirm(ui.app.confirmDeleteProfile(activeProfile.name))
@@ -49,6 +41,7 @@ export function App() {
         prefs={prefs}
         setDuration={setDuration}
         setIgnorePunctuation={setIgnorePunctuation}
+        setPreferences={setPreferences}
         durationOptions={durationOptions}
         ui={ui}
       />

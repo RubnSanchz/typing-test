@@ -34,24 +34,34 @@ export function useSettings(profileId: string) {
     setPrefs(load(profileId))
   }, [profileId])
 
-  const persist = (next: UserPreferences) => {
-    setPrefs(next)
-    localStorage.setItem(keyForProfile(profileId), JSON.stringify(next))
+  const updatePrefs = (updater: (current: UserPreferences) => UserPreferences) => {
+    setPrefs((current) => {
+      const next = updater(current)
+
+      try {
+        localStorage.setItem(keyForProfile(profileId), JSON.stringify(next))
+      } catch {
+        // Ignore storage failures and keep the in-memory preferences working.
+      }
+
+      return next
+    })
+  }
+
+  const setPreferences = (next: UserPreferences) => {
+    updatePrefs(() => next)
   }
 
   const setDuration = (d: number) => {
-    const next = { ...prefs, duration: d }
-    persist(next)
+    updatePrefs((current) => ({ ...current, duration: d }))
   }
 
   const setIgnorePunctuation = (value: boolean) => {
-    const next = { ...prefs, ignorePunctuation: value }
-    persist(next)
+    updatePrefs((current) => ({ ...current, ignorePunctuation: value }))
   }
 
   const setLanguage = (language: LanguageCode) => {
-    const next = { ...prefs, language }
-    persist(next)
+    updatePrefs((current) => ({ ...current, language }))
   }
 
   return {
@@ -59,6 +69,7 @@ export function useSettings(profileId: string) {
     setDuration,
     setIgnorePunctuation,
     setLanguage,
+    setPreferences,
     durationOptions: DURATION_OPTIONS,
     languageOptions: LANGUAGE_OPTIONS,
   } as const
