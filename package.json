@@ -11,8 +11,7 @@
     "build:desktop": "tsc -b && vite build --base=./",
     "desktop:start": "npm run build:desktop && electron .",
     "dist:win": "npm run build:desktop && electron-builder --win nsis --publish never",
-    "dist:portable": "npm run build:desktop && electron-builder --win portable --publish never",
-    "dist:all": "npm run build:desktop && electron-builder --win nsis portable --publish never",
+    "dist:all": "npm run dist:win",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -57,20 +56,11 @@
           "arch": [
             "x64"
           ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
         }
       ]
     },
     "nsis": {
       "artifactName": "TypingTest-Setup-${version}.${ext}"
-    },
-    "portable": {
-      "artifactName": "TypingTest-Portable-${version}.${ext}"
     }
   }
 }

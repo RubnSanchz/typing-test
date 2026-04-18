@@ -1,6 +1,10 @@
 # Typing Test
 
-A timed typing-speed trainer built with React, TypeScript, and Vite. Available as a web app and as a cross-platform desktop app via Electron.
+A timed typing-speed trainer built with React, TypeScript, and Vite. Available as a public web app and as a desktop app via Electron.
+
+## Public web app
+
+https://rubnsanchz.github.io/typing-test/
 
 ## Features
 
@@ -50,8 +54,7 @@ npm run desktop:start
 | `npm run build` | Web build (for GitHub Pages at `/typing-test/`) |
 | `npm run build:desktop` | Desktop build |
 | `npm run dist:win` | Windows NSIS installer |
-| `npm run dist:portable` | Windows portable executable |
-| `npm run dist:all` | Both NSIS installer and portable |
+| `npm run dist:all` | Alias of the stable Windows installer build |
 
 ## Project structure
 
