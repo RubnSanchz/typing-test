@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { ShellCopy } from '@/data/uiCopy'
 import type { LanguageCode, UserProfile } from '@/types/domain'
 import './AppShell.css'
@@ -12,11 +12,13 @@ interface Props {
   profiles: UserProfile[]
   activeProfileId: string
   onSelectProfile: (profileId: string) => void
-  onCreateProfile: () => void
-  onRenameProfile: () => void
+  onCreateProfile: (name: string) => boolean
+  onRenameProfile: (profileId: string, name: string) => boolean
   onDeleteProfile: () => void
   copy: ShellCopy
 }
+
+type ProfileEditorMode = 'create' | 'rename' | null
 
 export function AppShell({
   children,
@@ -33,6 +35,40 @@ export function AppShell({
   copy,
 }: Props) {
   const nextThemeName = theme === 'dark' ? copy.themeNameLight : copy.themeNameDark
+  const [editorMode, setEditorMode] = useState<ProfileEditorMode>(null)
+  const [draftName, setDraftName] = useState('')
+
+  const openCreateEditor = () => {
+    setEditorMode('create')
+    setDraftName('')
+  }
+
+  const openRenameEditor = () => {
+    const currentProfile = profiles.find((profile) => profile.id === activeProfileId)
+    setEditorMode('rename')
+    setDraftName(currentProfile?.name ?? '')
+  }
+
+  const closeEditor = () => {
+    setEditorMode(null)
+    setDraftName('')
+  }
+
+  const submitEditor = () => {
+    const trimmed = draftName.trim()
+    if (!trimmed) return
+
+    const success =
+      editorMode === 'create'
+        ? onCreateProfile(trimmed)
+        : onRenameProfile(activeProfileId, trimmed)
+
+    if (success) {
+      closeEditor()
+    }
+  }
+
+  const editorTitle = editorMode === 'create' ? copy.createProfileTitle : copy.renameProfileTitle
 
   return (
     <div className="shell">
@@ -47,7 +83,10 @@ export function AppShell({
               id="profile-selector"
               className="shell__language-select"
               value={activeProfileId}
-              onChange={(e) => onSelectProfile(e.target.value)}
+              onChange={(e) => {
+                onSelectProfile(e.target.value)
+                closeEditor()
+              }}
               aria-label={copy.profileSelectorAria}
             >
               {profiles.map((profile) => (
@@ -57,30 +96,33 @@ export function AppShell({
               ))}
             </select>
 
-            <button
-              className="shell__add-btn"
-              onClick={onCreateProfile}
-              aria-label={copy.createProfileAria}
-              title={copy.createProfileTitle}
-            >
-              +
-            </button>
-            <button
-              className="shell__add-btn"
-              onClick={onRenameProfile}
-              aria-label={copy.renameProfileAria}
-              title={copy.renameProfileTitle}
-            >
-              {copy.renameProfileText}
-            </button>
-            <button
-              className="shell__add-btn"
-              onClick={onDeleteProfile}
-              aria-label={copy.deleteProfileAria}
-              title={copy.deleteProfileTitle}
-            >
-              {copy.deleteProfileText}
-            </button>
+            <div className="shell__profile-actions">
+              <button
+                className="shell__icon-btn"
+                onClick={openCreateEditor}
+                aria-label={copy.createProfileAria}
+                title={copy.createProfileTitle}
+              >
+                +
+              </button>
+              <button
+                className="shell__icon-btn"
+                onClick={openRenameEditor}
+                aria-label={copy.renameProfileAria}
+                title={copy.renameProfileTitle}
+              >
+                ✎
+              </button>
+              <button
+                className="shell__icon-btn"
+                onClick={onDeleteProfile}
+                aria-label={copy.deleteProfileAria}
+                title={copy.deleteProfileTitle}
+                disabled={profiles.length <= 1}
+              >
+                ×
+              </button>
+            </div>
           </div>
 
           <div className="shell__controls-group shell__controls-group--language">
@@ -113,10 +155,57 @@ export function AppShell({
         </div>
       </header>
 
+      {editorMode ? (
+        <div
+          className="shell__profile-modal-overlay"
+          onClick={closeEditor}
+          role="presentation"
+        >
+          <div
+            className="shell__profile-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label={editorTitle}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="shell__profile-modal-header">
+              <h3 className="shell__profile-modal-title">{editorTitle}</h3>
+            </div>
+
+            <input
+              className="shell__profile-input"
+              value={draftName}
+              onChange={(e) => setDraftName(e.target.value.slice(0, 32))}
+              placeholder={copy.profileNamePlaceholder}
+              aria-label={copy.profileNamePlaceholder}
+              maxLength={32}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  submitEditor()
+                }
+                if (e.key === 'Escape') {
+                  closeEditor()
+                }
+              }}
+              autoFocus
+            />
+
+            <div className="shell__profile-modal-actions">
+              <button className="shell__add-btn shell__add-btn--primary" onClick={submitEditor}>
+                {copy.saveProfileText}
+              </button>
+              <button className="shell__add-btn" onClick={closeEditor}>
+                {copy.cancelProfileText}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <main className="shell__main">{children}</main>
 
       <footer className="shell__footer">
-        <span>{copy.footerTitle} · {copy.languageOptions[language]}</span>
+        <span>{copy.footerTitle} · RubnSanchz · {copy.languageOptions[language]}</span>
       </footer>
     </div>
   )
