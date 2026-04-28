@@ -16,7 +16,7 @@
 }
 
 .test-page--focus .test-page__top-bar {
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .test-page__hint {
