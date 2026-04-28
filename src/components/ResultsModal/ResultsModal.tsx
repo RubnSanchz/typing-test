@@ -1,4 +1,5 @@
 import type { KeyboardEvent } from 'react'
+import { useEffect } from 'react'
 import type { TypingMetrics, BestResult } from '@/types/domain'
 import type { UiCopy } from '@/data/uiCopy'
 import { StatsPanel } from '@/components/StatsPanel/StatsPanel'
@@ -13,6 +14,20 @@ interface Props {
 
 export function ResultsModal({ metrics, best, onRestart, copy }: Props) {
   const isNewBest = !best || metrics.wpmNet > best.wpmNet
+
+  useEffect(() => {
+    const handleKeyDown = (event: Event) => {
+      const keyboardEvent = event as unknown as KeyboardEvent
+      if (keyboardEvent.key === 'Enter') {
+        event.preventDefault()
+        onRestart()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onRestart])
+
   const handleModalKeyDownCapture = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === ' ' || event.key === 'Spacebar') {
       event.preventDefault()
@@ -45,7 +60,7 @@ export function ResultsModal({ metrics, best, onRestart, copy }: Props) {
           {copy.resultsModal.retry}
         </button>
 
-        <p className="modal__hint">{copy.resultsModal.shortcutHintPrefix} <kbd>Tab</kbd> + <kbd>Enter</kbd></p>
+        <p className="modal__hint">{copy.resultsModal.shortcutHintPrefix} <kbd>Enter</kbd></p>
       </div>
     </div>
   )
