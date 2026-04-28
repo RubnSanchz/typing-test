@@ -5,6 +5,7 @@ import './AppShell.css'
 
 interface Props {
   children: ReactNode
+  isFocusMode: boolean
   onToggleTheme: () => void
   theme: 'dark' | 'light'
   language: LanguageCode
@@ -22,6 +23,7 @@ type ProfileEditorMode = 'create' | 'rename' | null
 
 export function AppShell({
   children,
+  isFocusMode,
   onToggleTheme,
   theme,
   language,
@@ -72,88 +74,90 @@ export function AppShell({
 
   return (
     <div className="shell">
-      <header className="shell__header">
-        <span className="shell__logo">tt</span>
-        <div className="shell__controls">
-          <div className="shell__controls-group shell__controls-group--profile">
-            <label className="shell__language-label" htmlFor="profile-selector">
-              {copy.profileLabel}
-            </label>
-            <select
-              id="profile-selector"
-              className="shell__language-select"
-              value={activeProfileId}
-              onChange={(e) => {
-                onSelectProfile(e.target.value)
-                closeEditor()
-              }}
-              aria-label={copy.profileSelectorAria}
-            >
-              {profiles.map((profile) => (
-                <option key={profile.id} value={profile.id}>
-                  {profile.name}
-                </option>
-              ))}
-            </select>
+      {!isFocusMode && (
+        <header className="shell__header">
+          <span className="shell__logo">tt</span>
+          <div className="shell__controls">
+            <div className="shell__controls-group shell__controls-group--profile">
+              <label className="shell__language-label" htmlFor="profile-selector">
+                {copy.profileLabel}
+              </label>
+              <select
+                id="profile-selector"
+                className="shell__language-select"
+                value={activeProfileId}
+                onChange={(e) => {
+                  onSelectProfile(e.target.value)
+                  closeEditor()
+                }}
+                aria-label={copy.profileSelectorAria}
+              >
+                {profiles.map((profile) => (
+                  <option key={profile.id} value={profile.id}>
+                    {profile.name}
+                  </option>
+                ))}
+              </select>
 
-            <div className="shell__profile-actions">
-              <button
-                className="shell__icon-btn"
-                onClick={openCreateEditor}
-                aria-label={copy.createProfileAria}
-                title={copy.createProfileTitle}
+              <div className="shell__profile-actions">
+                <button
+                  className="shell__icon-btn"
+                  onClick={openCreateEditor}
+                  aria-label={copy.createProfileAria}
+                  title={copy.createProfileTitle}
+                >
+                  +
+                </button>
+                <button
+                  className="shell__icon-btn"
+                  onClick={openRenameEditor}
+                  aria-label={copy.renameProfileAria}
+                  title={copy.renameProfileTitle}
+                >
+                  ✎
+                </button>
+                <button
+                  className="shell__icon-btn"
+                  onClick={onDeleteProfile}
+                  aria-label={copy.deleteProfileAria}
+                  title={copy.deleteProfileTitle}
+                  disabled={profiles.length <= 1}
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            <div className="shell__controls-group shell__controls-group--language">
+              <label className="shell__language-label" htmlFor="language-selector">
+                {copy.languageLabel}
+              </label>
+              <select
+                id="language-selector"
+                className="shell__language-select"
+                value={language}
+                onChange={(e) => onChangeLanguage(e.target.value as LanguageCode)}
+                aria-label={copy.languageSelectorAria}
               >
-                +
-              </button>
+                <option value="es">{copy.languageOptions.es}</option>
+                <option value="en">{copy.languageOptions.en}</option>
+                <option value="fr">{copy.languageOptions.fr}</option>
+              </select>
+            </div>
+
+            <div className="shell__controls-group shell__controls-group--theme">
               <button
-                className="shell__icon-btn"
-                onClick={openRenameEditor}
-                aria-label={copy.renameProfileAria}
-                title={copy.renameProfileTitle}
+                className="shell__theme-btn"
+                onClick={onToggleTheme}
+                aria-label={copy.themeSwitchAria(nextThemeName)}
+                title={copy.themeSwitchTitle(nextThemeName)}
               >
-                ✎
-              </button>
-              <button
-                className="shell__icon-btn"
-                onClick={onDeleteProfile}
-                aria-label={copy.deleteProfileAria}
-                title={copy.deleteProfileTitle}
-                disabled={profiles.length <= 1}
-              >
-                ×
+                {theme === 'dark' ? '☀' : '☾'}
               </button>
             </div>
           </div>
-
-          <div className="shell__controls-group shell__controls-group--language">
-            <label className="shell__language-label" htmlFor="language-selector">
-              {copy.languageLabel}
-            </label>
-            <select
-              id="language-selector"
-              className="shell__language-select"
-              value={language}
-              onChange={(e) => onChangeLanguage(e.target.value as LanguageCode)}
-              aria-label={copy.languageSelectorAria}
-            >
-              <option value="es">{copy.languageOptions.es}</option>
-              <option value="en">{copy.languageOptions.en}</option>
-              <option value="fr">{copy.languageOptions.fr}</option>
-            </select>
-          </div>
-
-          <div className="shell__controls-group shell__controls-group--theme">
-            <button
-              className="shell__theme-btn"
-              onClick={onToggleTheme}
-              aria-label={copy.themeSwitchAria(nextThemeName)}
-              title={copy.themeSwitchTitle(nextThemeName)}
-            >
-              {theme === 'dark' ? '☀' : '☾'}
-            </button>
-          </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {editorMode ? (
         <div
@@ -202,11 +206,13 @@ export function AppShell({
         </div>
       ) : null}
 
-      <main className="shell__main">{children}</main>
+      <main className={`shell__main ${isFocusMode ? 'shell__main--focus' : ''}`}>{children}</main>
 
-      <footer className="shell__footer">
-        <span>{copy.footerTitle} · RubnSanchz · {copy.languageOptions[language]}</span>
-      </footer>
+      {!isFocusMode && (
+        <footer className="shell__footer">
+          <span>{copy.footerTitle} · RubnSanchz · {copy.languageOptions[language]}</span>
+        </footer>
+      )}
     </div>
   )
 }

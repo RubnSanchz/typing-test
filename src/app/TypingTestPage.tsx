@@ -21,6 +21,7 @@ interface Props {
   setPreferences: (prefs: UserPreferences) => void
   durationOptions: typeof DURATION_OPTIONS
   ui: UiCopy
+  onTypingFocusChange?: (isFocused: boolean) => void
 }
 
 export function TypingTestPage({
@@ -32,6 +33,7 @@ export function TypingTestPage({
   setPreferences,
   durationOptions,
   ui,
+  onTypingFocusChange,
 }: Props) {
   const { session, metrics, timeLeft, handleInput, reset } = useTypingSession({
     duration: prefs.duration,
@@ -92,6 +94,10 @@ export function TypingTestPage({
     })
   }, [profileId, prefs.duration, prefs.ignorePunctuation, prefs.language, reset])
 
+  useEffect(() => {
+    onTypingFocusChange?.(session.status === 'running')
+  }, [onTypingFocusChange, session.status])
+
   const handleChangeDuration = (d: number) => {
     setDuration(d)
     reset({ duration: d, ignorePunctuation: prefs.ignorePunctuation, language: prefs.language })
@@ -107,8 +113,10 @@ export function TypingTestPage({
     reset({ duration, ignorePunctuation, language })
   }
 
+  const isFocusMode = session.status === 'running'
+
   return (
-    <section className="test-page">
+    <section className={`test-page ${isFocusMode ? 'test-page--focus' : ''}`}>
       <div className="test-page__top-bar">
         <TimerPanel
           timeLeft={timeLeft}
@@ -120,7 +128,7 @@ export function TypingTestPage({
           status={session.status}
           copy={ui.timerPanel}
         />
-        {session.status === 'running' && (
+        {!isFocusMode && session.status === 'running' && (
           <StatsPanel metrics={metrics} live copy={ui.statsPanel} />
         )}
       </div>
@@ -153,25 +161,29 @@ export function TypingTestPage({
         </button>
       </div>
 
-      <HistoryPanel
-        stats={stats}
-        breakdown={breakdown}
-        currentMode={{
-          language: prefs.language,
-          duration: prefs.duration,
-          ignorePunctuation: prefs.ignorePunctuation,
-        }}
-        onClear={clearHistory}
-        onApplyMode={handleApplyMode}
-        profileName={profileName}
-        copy={ui.historyPanel}
-      />
+      {!isFocusMode && (
+        <HistoryPanel
+          stats={stats}
+          breakdown={breakdown}
+          currentMode={{
+            language: prefs.language,
+            duration: prefs.duration,
+            ignorePunctuation: prefs.ignorePunctuation,
+          }}
+          onClear={clearHistory}
+          onApplyMode={handleApplyMode}
+          profileName={profileName}
+          copy={ui.historyPanel}
+        />
+      )}
 
-      <div className="test-page__hint">
-        {session.status === 'idle' && ui.typingPage.startHint}
-        {session.status === 'running' && ' '}
-        {session.status === 'finished' && ' '}
-      </div>
+      {!isFocusMode && (
+        <div className="test-page__hint">
+          {session.status === 'idle' && ui.typingPage.startHint}
+          {session.status === 'running' && ' '}
+          {session.status === 'finished' && ' '}
+        </div>
+      )}
 
       {session.status === 'finished' && (
         <ResultsModal

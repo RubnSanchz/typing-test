@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useTheme } from '@/features/theme/useTheme'
 import { useProfiles } from '@/features/settings/useProfiles'
 import { useSettings } from '@/features/settings/useSettings'
@@ -6,6 +7,7 @@ import { AppShell } from '@/components/AppShell/AppShell'
 import { TypingTestPage } from './TypingTestPage'
 
 export function App() {
+  const [isFocusMode, setIsFocusMode] = useState(false)
   const { theme, toggle } = useTheme()
   const { profiles, activeProfile, selectProfile, createProfile, renameProfile, deleteProfile } = useProfiles()
   const { prefs, setDuration, setIgnorePunctuation, setLanguage, setPreferences, durationOptions } = useSettings(activeProfile.id)
@@ -23,6 +25,7 @@ export function App() {
 
   return (
     <AppShell
+      isFocusMode={isFocusMode}
       theme={theme}
       onToggleTheme={toggle}
       language={prefs.language}
@@ -44,6 +47,7 @@ export function App() {
         setPreferences={setPreferences}
         durationOptions={durationOptions}
         ui={ui}
+        onTypingFocusChange={setIsFocusMode}
       />
     </AppShell>
   )
