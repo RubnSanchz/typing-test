@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from 'react'
 import type { TypingMetrics, BestResult } from '@/types/domain'
 import type { UiCopy } from '@/data/uiCopy'
 import { StatsPanel } from '@/components/StatsPanel/StatsPanel'
@@ -12,9 +13,21 @@ interface Props {
 
 export function ResultsModal({ metrics, best, onRestart, copy }: Props) {
   const isNewBest = !best || metrics.wpmNet > best.wpmNet
+  const handleModalKeyDownCapture = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+  }
 
   return (
-    <div className="modal-overlay" role="dialog" aria-modal="true" aria-label={copy.resultsModal.dialogAria}>
+    <div
+      className="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={copy.resultsModal.dialogAria}
+      onKeyDownCapture={handleModalKeyDownCapture}
+    >
       <div className="modal">
         <h2 className="modal__title">
           {isNewBest ? copy.resultsModal.titleNewBest : copy.resultsModal.titleResults}
