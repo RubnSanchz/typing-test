@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "npm run build:web",
     "build:web": "tsc -b && vite build --base=/typing-test/",
+    "build:firebase": "tsc -b && vite build --base=/",
     "build:desktop": "tsc -b && vite build --base=./",
     "desktop:start": "npm run build:desktop && electron .",
     "dist:win": "npm run build:desktop && electron-builder --win nsis --publish never",
