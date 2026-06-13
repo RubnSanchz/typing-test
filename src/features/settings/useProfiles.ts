@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { readStorage, writeStorage } from '@/utils/storage'
 import { syncProfileMetadata, deleteProfileFromCloud } from '@/features/sync/profileSync'
+import { onUidChanged } from '@/lib/firebase'
 import type { UserProfile } from '@/types/domain'
 
 const STORAGE_KEY = 'tt-profiles'
@@ -69,15 +70,19 @@ export function useProfiles() {
     }
   }, [activeProfileId, profiles])
 
-  // Push existing profiles' metadata to the cloud once per session so that
-  // pre-existing profiles (e.g. the default one) also get their name synced,
-  // not only profiles created/renamed after this feature shipped.
-  const initialSyncDone = useRef(false)
+  // Whenever the signed-in user changes (initial anonymous sign-in, or a later
+  // Google/email login), push every local profile's metadata so the current
+  // account's cloud document holds all profiles — not just ones changed after.
+  const profilesRef = useRef(profiles)
   useEffect(() => {
-    if (initialSyncDone.current) return
-    initialSyncDone.current = true
-    profiles.forEach((profile) => void syncProfileMetadata(profile))
+    profilesRef.current = profiles
   }, [profiles])
+  useEffect(() => {
+    return onUidChanged((uid) => {
+      if (!uid) return
+      profilesRef.current.forEach((profile) => void syncProfileMetadata(profile))
+    })
+  }, [])
 
   const activeProfile = useMemo(
     () => profiles.find((profile) => profile.id === activeProfileId) ?? profiles[0] ?? DEFAULT_PROFILES[0],

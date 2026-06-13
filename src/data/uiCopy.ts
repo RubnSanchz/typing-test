@@ -88,6 +88,35 @@ interface ResultsModalCopy {
   shortcutHintPrefix: string
 }
 
+export interface AuthCopy {
+  openMenuAria: string
+  notSignedInLabel: string
+  signInTitle: string
+  accountTitle: string
+  googleButton: string
+  orSeparator: string
+  emailLabel: string
+  passwordLabel: string
+  emailPlaceholder: string
+  passwordPlaceholder: string
+  signInButton: string
+  registerButton: string
+  toggleToRegister: string
+  toggleToSignIn: string
+  signOutButton: string
+  close: string
+  signedInAs: string
+  errorGeneric: string
+}
+
+export interface DonateCopy {
+  openAria: string
+  title: string
+  message: string
+  orSeparator: string
+  close: string
+}
+
 export interface UiCopy {
   app: AppCopy
   shell: ShellCopy
@@ -97,6 +126,8 @@ export interface UiCopy {
   statsPanel: StatsPanelCopy
   historyPanel: HistoryPanelCopy
   resultsModal: ResultsModalCopy
+  auth: AuthCopy
+  donate: DonateCopy
 }
 
 const UI_COPY: Record<LanguageCode, UiCopy> = {
@@ -189,6 +220,33 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
       retry: 'Volver a intentar',
       shortcutHintPrefix: 'o pulsa',
     },
+    auth: {
+      openMenuAria: 'Cuenta',
+      notSignedInLabel: 'Sin iniciar sesión',
+      signInTitle: 'Iniciar sesión',
+      accountTitle: 'Tu cuenta',
+      googleButton: 'Continuar con Google',
+      orSeparator: 'o',
+      emailLabel: 'Correo',
+      passwordLabel: 'Contraseña',
+      emailPlaceholder: 'tu@correo.com',
+      passwordPlaceholder: 'Contraseña',
+      signInButton: 'Iniciar sesión',
+      registerButton: 'Crear cuenta',
+      toggleToRegister: '¿No tienes cuenta? Crear una',
+      toggleToSignIn: '¿Ya tienes cuenta? Inicia sesión',
+      signOutButton: 'Cerrar sesión',
+      close: 'Cerrar',
+      signedInAs: 'Sesión iniciada como',
+      errorGeneric: 'No se pudo completar. Revisa los datos e inténtalo de nuevo.',
+    },
+    donate: {
+      openAria: 'Apoyar el proyecto',
+      title: 'Apoya el proyecto',
+      message: 'Si te resulta útil typing test, puedes apoyar el proyecto invitándome a un café. ¡Gracias!',
+      orSeparator: 'o',
+      close: 'Cerrar',
+    },
   },
   en: {
     app: {
@@ -279,6 +337,33 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
       retry: 'Try again',
       shortcutHintPrefix: 'or press',
     },
+    auth: {
+      openMenuAria: 'Account',
+      notSignedInLabel: 'Not signed in',
+      signInTitle: 'Sign in',
+      accountTitle: 'Your account',
+      googleButton: 'Continue with Google',
+      orSeparator: 'or',
+      emailLabel: 'Email',
+      passwordLabel: 'Password',
+      emailPlaceholder: 'you@email.com',
+      passwordPlaceholder: 'Password',
+      signInButton: 'Sign in',
+      registerButton: 'Create account',
+      toggleToRegister: "No account? Create one",
+      toggleToSignIn: 'Already have an account? Sign in',
+      signOutButton: 'Sign out',
+      close: 'Close',
+      signedInAs: 'Signed in as',
+      errorGeneric: 'Could not complete. Check your details and try again.',
+    },
+    donate: {
+      openAria: 'Support the project',
+      title: 'Support the project',
+      message: 'If you find typing test useful, you can support the project by buying me a coffee. Thanks!',
+      orSeparator: 'or',
+      close: 'Close',
+    },
   },
   fr: {
     app: {
@@ -368,6 +453,33 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
       speedUnit: 'MPM',
       retry: 'Reessayer',
       shortcutHintPrefix: 'ou appuie sur',
+    },
+    auth: {
+      openMenuAria: 'Compte',
+      notSignedInLabel: 'Non connecte',
+      signInTitle: 'Se connecter',
+      accountTitle: 'Ton compte',
+      googleButton: 'Continuer avec Google',
+      orSeparator: 'ou',
+      emailLabel: 'E-mail',
+      passwordLabel: 'Mot de passe',
+      emailPlaceholder: 'toi@email.com',
+      passwordPlaceholder: 'Mot de passe',
+      signInButton: 'Se connecter',
+      registerButton: 'Creer un compte',
+      toggleToRegister: 'Pas de compte ? Creer un compte',
+      toggleToSignIn: 'Deja un compte ? Se connecter',
+      signOutButton: 'Se deconnecter',
+      close: 'Fermer',
+      signedInAs: 'Connecte en tant que',
+      errorGeneric: 'Impossible de terminer. Verifie les donnees et reessaie.',
+    },
+    donate: {
+      openAria: 'Soutenir le projet',
+      title: 'Soutiens le projet',
+      message: "Si typing test t'est utile, tu peux soutenir le projet en m'offrant un cafe. Merci !",
+      orSeparator: 'ou',
+      close: 'Fermer',
     },
   },
 }

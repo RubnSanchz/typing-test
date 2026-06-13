@@ -1,6 +1,6 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app'
 import { getFirestore, type Firestore } from 'firebase/firestore'
-import { getAuth, onAuthStateChanged, signInAnonymously, type Auth } from 'firebase/auth'
+import { getAuth, onAuthStateChanged, signInAnonymously, type Auth, type User } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -20,46 +20,70 @@ export const isFirebaseConfigured = Boolean(
 
 let app: FirebaseApp | null = null
 let firestore: Firestore | null = null
-let auth: Auth | null = null
+let authInstance: Auth | null = null
+
+// Live current user, kept in sync with auth state. Sync targets this user's uid,
+// so it follows the user across anonymous → Google/email sign-in and back.
+let currentUser: User | null = null
+let resolveReady: (() => void) | null = null
+const authReady = new Promise<void>((resolve) => {
+  resolveReady = resolve
+})
+
+function markReady() {
+  resolveReady?.()
+  resolveReady = null
+}
 
 if (isFirebaseConfigured) {
   try {
     app = initializeApp(firebaseConfig)
     firestore = getFirestore(app)
-    auth = getAuth(app)
+    authInstance = getAuth(app)
+
+    onAuthStateChanged(authInstance, (user) => {
+      currentUser = user
+      if (user) {
+        markReady()
+      } else if (authInstance) {
+        // Signed out (or first load): keep an anonymous identity as the sync
+        // baseline so the cloud backup works even without an explicit login.
+        signInAnonymously(authInstance).catch((error) => {
+          console.warn('[firebase] anonymous sign-in failed; sync disabled', error)
+          markReady()
+        })
+      }
+    })
   } catch (error) {
     console.warn('[firebase] initialization failed; sync disabled', error)
+    markReady()
   }
+} else {
+  markReady()
 }
 
 export const db = firestore
-
-let uidPromise: Promise<string | null> | null = null
+export const auth = authInstance
 
 /**
- * Resolves the current anonymous user's uid, signing in anonymously if needed.
- * Memoized so the whole app shares a single sign-in. The anonymous identity is
- * persisted by Firebase Auth, so the same uid is reused across reloads — which
- * is what lets each browser own its `profiles/{uid}` document. Returns null
- * when Firebase is not configured or sign-in fails (sync becomes a no-op).
+ * Resolves the current user's uid (anonymous, Google or email/password),
+ * waiting for the initial auth state. Returns null when Firebase is not
+ * configured or sign-in failed, in which case sync becomes a no-op.
  */
-export function getCurrentUid(): Promise<string | null> {
-  if (!auth) return Promise.resolve(null)
-  const activeAuth = auth
-  if (!uidPromise) {
-    uidPromise = new Promise((resolve) => {
-      const unsubscribe = onAuthStateChanged(activeAuth, (user) => {
-        if (user) {
-          unsubscribe()
-          resolve(user.uid)
-        }
-      })
-      signInAnonymously(activeAuth).catch((error) => {
-        unsubscribe()
-        console.warn('[firebase] anonymous sign-in failed; sync disabled', error)
-        resolve(null)
-      })
-    })
+export async function getCurrentUid(): Promise<string | null> {
+  if (!authInstance) return null
+  await authReady
+  return currentUser?.uid ?? null
+}
+
+/**
+ * Subscribe to the signed-in uid. Fires on initial auth and whenever the user
+ * changes (anonymous ⇄ Google/email). Returns an unsubscribe function.
+ */
+export function onUidChanged(callback: (uid: string | null) => void): () => void {
+  if (!authInstance) {
+    callback(null)
+    return () => {}
   }
-  return uidPromise
+  return onAuthStateChanged(authInstance, (user) => callback(user?.uid ?? null))
 }

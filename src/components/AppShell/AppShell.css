@@ -235,10 +235,21 @@
   position: sticky;
   bottom: 0;
   z-index: 50;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
   padding: 1rem 0;
   border-top: 1px solid var(--color-border);
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
-  text-align: center;
   background-color: var(--color-bg);
+}
+
+/* User badge pinned left, donate button pinned right; title stays centered. */
+.shell__footer .auth-badge {
+  justify-self: start;
+}
+
+.shell__footer .donate-btn {
+  justify-self: end;
 }

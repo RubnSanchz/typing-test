@@ -39,6 +39,8 @@ export function App() {
       onRenameProfile={handleRenameProfile}
       onDeleteProfile={handleDeleteProfile}
       copy={ui.shell}
+      authCopy={ui.auth}
+      donateCopy={ui.donate}
     >
       <TypingTestPage
         profileId={activeProfile.id}
