@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { readStorage, writeStorage } from '@/utils/storage'
 import type { UserProfile } from '@/types/domain'
 
 const STORAGE_KEY = 'tt-profiles'
@@ -7,22 +8,6 @@ const ACTIVE_KEY = 'tt-active-profile'
 const DEFAULT_PROFILES: UserProfile[] = [{ id: 'default', name: 'Perfil por defecto' }]
 
 const LEGACY_DEFAULT_IDS = new Set(['person-default', 'keyboard-laptop'])
-
-function readStorage(key: string): string | null {
-  try {
-    return localStorage.getItem(key)
-  } catch {
-    return null
-  }
-}
-
-function writeStorage(key: string, value: string): void {
-  try {
-    localStorage.setItem(key, value)
-  } catch {
-    // Ignore storage write failures so the in-memory profile flow keeps working.
-  }
-}
 
 function sanitizeName(name: string): string {
   return name

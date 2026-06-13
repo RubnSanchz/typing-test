@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { DURATION_OPTIONS, LANGUAGE_OPTIONS } from '@/features/settings/useSettings'
+import { readStorage, writeStorage } from '@/utils/storage'
 import type { BestResult, HistoryMode, HistoryModeEntry, HistoryStats, TypingMetrics } from '@/types/domain'
 
 const STORAGE_KEY = 'tt-history'
@@ -30,7 +31,7 @@ function modeKey(mode: HistoryMode): string {
 
 function loadStore(profileId: string, currentMode: HistoryMode): StoredHistory {
   try {
-    const raw = localStorage.getItem(keyForProfile(profileId))
+    const raw = readStorage(keyForProfile(profileId))
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<StoredHistory & HistoryStats>
 
@@ -57,7 +58,7 @@ function loadStore(profileId: string, currentMode: HistoryMode): StoredHistory {
       }
     }
 
-    const legacyRaw = localStorage.getItem(LEGACY_BEST_KEY)
+    const legacyRaw = readStorage(LEGACY_BEST_KEY)
     if (legacyRaw) {
       const legacyBest = JSON.parse(legacyRaw) as BestResult
       return {
@@ -84,7 +85,7 @@ function loadStore(profileId: string, currentMode: HistoryMode): StoredHistory {
 }
 
 function writeStore(profileId: string, store: StoredHistory) {
-  localStorage.setItem(keyForProfile(profileId), JSON.stringify(store))
+  writeStorage(keyForProfile(profileId), JSON.stringify(store))
 }
 
 export function useHistory(profileId: string, currentMode: HistoryMode) {

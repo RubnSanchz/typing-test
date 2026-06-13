@@ -4,13 +4,12 @@ import './StatsPanel.css'
 
 interface Props {
   metrics: TypingMetrics
-  live?: boolean
   copy: StatsPanelCopy
 }
 
-export function StatsPanel({ metrics, live = false, copy }: Props) {
+export function StatsPanel({ metrics, copy }: Props) {
   return (
-    <div className="stats" aria-label={live ? copy.ariaLive : copy.ariaResults}>
+    <div className="stats" aria-label={copy.ariaResults}>
       <Stat label={copy.wpmNetLabel} value={metrics.wpmNet} />
       <Stat label={copy.wpmGrossLabel} value={metrics.wpmGross} small />
       <Stat label={copy.accuracyLabel} value={`${metrics.accuracy}%`} />

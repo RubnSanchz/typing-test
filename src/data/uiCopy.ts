@@ -50,7 +50,6 @@ export interface TimerPanelCopy {
 }
 
 export interface StatsPanelCopy {
-  ariaLive: string
   ariaResults: string
   wpmNetLabel: string
   wpmGrossLabel: string
@@ -151,7 +150,6 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
       punctuationOn: 'Con signos',
     },
     statsPanel: {
-      ariaLive: 'Estadisticas en vivo',
       ariaResults: 'Resultados',
       wpmNetLabel: 'WPM',
       wpmGrossLabel: 'Bruto',
@@ -242,7 +240,6 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
       punctuationOn: 'With punctuation',
     },
     statsPanel: {
-      ariaLive: 'Live stats',
       ariaResults: 'Results',
       wpmNetLabel: 'WPM',
       wpmGrossLabel: 'Gross',
@@ -333,7 +330,6 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
       punctuationOn: 'Avec ponctuation',
     },
     statsPanel: {
-      ariaLive: 'Statistiques en direct',
       ariaResults: 'Resultats',
       wpmNetLabel: 'MPM',
       wpmGrossLabel: 'Brut',

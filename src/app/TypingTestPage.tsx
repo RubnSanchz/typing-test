@@ -62,13 +62,10 @@ export function TypingTestPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.status])
 
-  // Tab + Enter shortcut to restart
+  // Keep Tab from moving focus out of the typing flow.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && e.target instanceof HTMLButtonElement) return
-      if (e.key === 'Tab') {
-        e.preventDefault()
-      }
+      if (e.key === 'Tab') e.preventDefault()
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)

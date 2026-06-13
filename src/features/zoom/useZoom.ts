@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { readStorage, writeStorage, removeStorage } from '@/utils/storage'
 
 const ZOOM_STORAGE_KEY = 'app-zoom-level'
 const MIN_ZOOM = 0.8
@@ -11,7 +12,7 @@ const applyZoom = (level: number) => {
 }
 
 const initializeZoom = () => {
-  const stored = localStorage.getItem(ZOOM_STORAGE_KEY)
+  const stored = readStorage(ZOOM_STORAGE_KEY)
   if (stored) {
     const parsed = parseFloat(stored)
     if (!isNaN(parsed) && parsed >= MIN_ZOOM && parsed <= MAX_ZOOM) {
@@ -28,7 +29,7 @@ export function useZoom() {
   const updateZoom = useCallback((newZoom: number) => {
     const clamped = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom))
     setZoom(clamped)
-    localStorage.setItem(ZOOM_STORAGE_KEY, clamped.toString())
+    writeStorage(ZOOM_STORAGE_KEY, clamped.toString())
     applyZoom(clamped)
   }, [])
 
@@ -45,7 +46,7 @@ export function useZoom() {
       } else if (e.key === '0') {
         e.preventDefault()
         setZoom(1)
-        localStorage.removeItem(ZOOM_STORAGE_KEY)
+        removeStorage(ZOOM_STORAGE_KEY)
         applyZoom(1)
       }
     }
