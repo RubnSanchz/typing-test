@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { readStorage, writeStorage } from '@/utils/storage'
 import { syncProfileMetadata, deleteProfileFromCloud } from '@/features/sync/profileSync'
 import type { UserProfile } from '@/types/domain'
@@ -68,6 +68,16 @@ export function useProfiles() {
       writeStorage(ACTIVE_KEY, activeProfileId)
     }
   }, [activeProfileId, profiles])
+
+  // Push existing profiles' metadata to the cloud once per session so that
+  // pre-existing profiles (e.g. the default one) also get their name synced,
+  // not only profiles created/renamed after this feature shipped.
+  const initialSyncDone = useRef(false)
+  useEffect(() => {
+    if (initialSyncDone.current) return
+    initialSyncDone.current = true
+    profiles.forEach((profile) => void syncProfileMetadata(profile))
+  }, [profiles])
 
   const activeProfile = useMemo(
     () => profiles.find((profile) => profile.id === activeProfileId) ?? profiles[0] ?? DEFAULT_PROFILES[0],

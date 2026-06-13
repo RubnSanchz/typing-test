@@ -1,29 +1,53 @@
-import { doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
+import { doc, setDoc, updateDoc, deleteField, serverTimestamp, type DocumentReference } from 'firebase/firestore'
+import { db, getCurrentUid } from '@/lib/firebase'
 import type { HistoryStats, UserProfile } from '@/types/domain'
 
 const COLLECTION = 'profiles'
 
 /**
- * Fire-and-forget sync of user (profile) metadata + stats to Cloud Firestore.
- * Every function is a no-op when Firebase is not configured and never throws —
- * the app is local-first and must keep working offline or on network failure.
+ * Fire-and-forget sync of the user's profiles + stats to Cloud Firestore.
+ *
+ * Security rules scope each anonymous user to a single document `profiles/{uid}`
+ * (request.auth.uid == doc id), so every local profile for this browser is
+ * stored under one document, nested in a `profiles` map keyed by local id:
+ *
+ *   profiles/{uid} = {
+ *     uid, updatedAt,
+ *     profiles: { [localId]: { id, name, createdAt, updatedAt, stats, lastResultAt } }
+ *   }
+ *
+ * Every function is a no-op when Firebase is not configured / sign-in failed,
+ * and never throws — the app is local-first and must keep working offline.
  */
+
+async function userDoc(): Promise<DocumentReference | null> {
+  if (!db) return null
+  const uid = await getCurrentUid()
+  if (!uid) return null
+  return doc(db, COLLECTION, uid)
+}
 
 /** Upsert a profile's metadata. Pass isNew=true on creation to stamp createdAt. */
 export async function syncProfileMetadata(
   profile: UserProfile,
   options: { isNew?: boolean } = {},
 ): Promise<void> {
-  if (!db) return
+  const ref = await userDoc()
+  if (!ref) return
   try {
     await setDoc(
-      doc(db, COLLECTION, profile.id),
+      ref,
       {
-        id: profile.id,
-        name: profile.name,
+        uid: ref.id,
         updatedAt: serverTimestamp(),
-        ...(options.isNew ? { createdAt: serverTimestamp() } : {}),
+        profiles: {
+          [profile.id]: {
+            id: profile.id,
+            name: profile.name,
+            updatedAt: serverTimestamp(),
+            ...(options.isNew ? { createdAt: serverTimestamp() } : {}),
+          },
+        },
       },
       { merge: true },
     )
@@ -37,15 +61,22 @@ export async function syncProfileStats(
   profileId: string,
   modes: Record<string, HistoryStats>,
 ): Promise<void> {
-  if (!db) return
+  const ref = await userDoc()
+  if (!ref) return
   try {
     await setDoc(
-      doc(db, COLLECTION, profileId),
+      ref,
       {
-        id: profileId,
-        stats: modes,
-        lastResultAt: serverTimestamp(),
+        uid: ref.id,
         updatedAt: serverTimestamp(),
+        profiles: {
+          [profileId]: {
+            id: profileId,
+            stats: modes,
+            lastResultAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          },
+        },
       },
       { merge: true },
     )
@@ -54,11 +85,15 @@ export async function syncProfileStats(
   }
 }
 
-/** Remove a profile document when the profile is deleted locally. */
+/** Remove a single profile from the user's document when deleted locally. */
 export async function deleteProfileFromCloud(profileId: string): Promise<void> {
-  if (!db) return
+  const ref = await userDoc()
+  if (!ref) return
   try {
-    await deleteDoc(doc(db, COLLECTION, profileId))
+    await updateDoc(ref, {
+      [`profiles.${profileId}`]: deleteField(),
+      updatedAt: serverTimestamp(),
+    })
   } catch (error) {
     console.warn('[firebase] deleteProfileFromCloud failed', error)
   }
