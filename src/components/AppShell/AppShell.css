@@ -19,11 +19,9 @@
 }
 
 .shell__logo {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  color: var(--color-accent);
-  letter-spacing: -0.05em;
+  height: 2.25rem;
+  width: auto;
+  display: block;
 }
 
 .shell__controls {

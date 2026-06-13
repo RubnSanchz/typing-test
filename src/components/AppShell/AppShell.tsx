@@ -76,7 +76,11 @@ export function AppShell({
     <div className="shell">
       {!isFocusMode && (
         <header className="shell__header">
-          <span className="shell__logo">tt</span>
+          <img
+            className="shell__logo"
+            src={`${import.meta.env.BASE_URL}typing-test-icon.png`}
+            alt={copy.footerTitle}
+          />
           <div className="shell__controls">
             <div className="shell__controls-group shell__controls-group--profile">
               <label className="shell__language-label" htmlFor="profile-selector">
