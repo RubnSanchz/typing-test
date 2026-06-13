@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react'
-import type { ShellCopy } from '@/data/uiCopy'
+import type { AuthCopy, DonateCopy, ShellCopy } from '@/data/uiCopy'
 import type { LanguageCode, UserProfile } from '@/types/domain'
+import { AuthBadge } from '@/components/AuthBadge/AuthBadge'
+import { DonateButton } from '@/components/DonateButton/DonateButton'
 import './AppShell.css'
 
 interface Props {
@@ -17,6 +19,8 @@ interface Props {
   onRenameProfile: (profileId: string, name: string) => boolean
   onDeleteProfile: () => void
   copy: ShellCopy
+  authCopy: AuthCopy
+  donateCopy: DonateCopy
 }
 
 type ProfileEditorMode = 'create' | 'rename' | null
@@ -35,6 +39,8 @@ export function AppShell({
   onRenameProfile,
   onDeleteProfile,
   copy,
+  authCopy,
+  donateCopy,
 }: Props) {
   const nextThemeName = theme === 'dark' ? copy.themeNameLight : copy.themeNameDark
   const [editorMode, setEditorMode] = useState<ProfileEditorMode>(null)
@@ -76,7 +82,11 @@ export function AppShell({
     <div className="shell">
       {!isFocusMode && (
         <header className="shell__header">
-          <span className="shell__logo">tt</span>
+          <img
+            className="shell__logo"
+            src={`${import.meta.env.BASE_URL}typing-test-icon.png`}
+            alt={copy.footerTitle}
+          />
           <div className="shell__controls">
             <div className="shell__controls-group shell__controls-group--profile">
               <label className="shell__language-label" htmlFor="profile-selector">
@@ -210,7 +220,9 @@ export function AppShell({
 
       {!isFocusMode && (
         <footer className="shell__footer">
+          <AuthBadge copy={authCopy} />
           <span>{copy.footerTitle} · RubnSanchz · {copy.languageOptions[language]}</span>
+          <DonateButton copy={donateCopy} />
         </footer>
       )}
     </div>

@@ -16,9 +16,8 @@ export function ResultsModal({ metrics, best, onRestart, copy }: Props) {
   const isNewBest = !best || metrics.wpmNet > best.wpmNet
 
   useEffect(() => {
-    const handleKeyDown = (event: Event) => {
-      const keyboardEvent = event as unknown as KeyboardEvent
-      if (keyboardEvent.key === 'Enter') {
+    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Enter') {
         event.preventDefault()
         onRestart()
       }

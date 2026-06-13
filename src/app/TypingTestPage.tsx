@@ -5,7 +5,6 @@ import { useHistory } from '@/features/stats/useHistory'
 import { TextDisplay } from '@/components/TextDisplay/TextDisplay'
 import { TypingInput } from '@/components/TypingInput/TypingInput'
 import { TimerPanel } from '@/components/TimerPanel/TimerPanel'
-import { StatsPanel } from '@/components/StatsPanel/StatsPanel'
 import { HistoryPanel } from '@/components/HistoryPanel/HistoryPanel'
 import { ResultsModal } from '@/components/ResultsModal/ResultsModal'
 import type { UiCopy } from '@/data/uiCopy'
@@ -48,6 +47,9 @@ export function TypingTestPage({
   const lastLanguageRef = useRef<LanguageCode>(prefs.language)
   const lastProfileRef = useRef<string>(profileId)
 
+  const resetSession = (overrides?: Partial<typeof prefs>) =>
+    reset({ ...prefs, ...overrides })
+
   // Save record when session finishes
   useEffect(() => {
     if (session.status === 'finished') {
@@ -60,13 +62,10 @@ export function TypingTestPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.status])
 
-  // Tab + Enter shortcut to restart
+  // Keep Tab from moving focus out of the typing flow.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && e.target instanceof HTMLButtonElement) return
-      if (e.key === 'Tab') {
-        e.preventDefault()
-      }
+      if (e.key === 'Tab') e.preventDefault()
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
@@ -76,22 +75,16 @@ export function TypingTestPage({
   useEffect(() => {
     if (lastLanguageRef.current === prefs.language) return
     lastLanguageRef.current = prefs.language
-    reset({
-      duration: prefs.duration,
-      ignorePunctuation: prefs.ignorePunctuation,
-      language: prefs.language,
-    })
+    resetSession()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefs.duration, prefs.ignorePunctuation, prefs.language, reset])
 
   useEffect(() => {
     if (lastProfileRef.current === profileId) return
     lastProfileRef.current = profileId
     lastLanguageRef.current = prefs.language
-    reset({
-      duration: prefs.duration,
-      ignorePunctuation: prefs.ignorePunctuation,
-      language: prefs.language,
-    })
+    resetSession()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileId, prefs.duration, prefs.ignorePunctuation, prefs.language, reset])
 
   useEffect(() => {
@@ -100,17 +93,17 @@ export function TypingTestPage({
 
   const handleChangeDuration = (d: number) => {
     setDuration(d)
-    reset({ duration: d, ignorePunctuation: prefs.ignorePunctuation, language: prefs.language })
+    resetSession({ duration: d })
   }
 
   const handleToggleIgnorePunctuation = (value: boolean) => {
     setIgnorePunctuation(value)
-    reset({ duration: prefs.duration, ignorePunctuation: value, language: prefs.language })
+    resetSession({ ignorePunctuation: value })
   }
 
-  const handleApplyMode = ({ language, duration, ignorePunctuation }: UserPreferences) => {
-    setPreferences({ language, duration, ignorePunctuation })
-    reset({ duration, ignorePunctuation, language })
+  const handleApplyMode = (nextPrefs: UserPreferences) => {
+    setPreferences(nextPrefs)
+    reset(nextPrefs)
   }
 
   const isFocusMode = session.status === 'running'
@@ -128,9 +121,7 @@ export function TypingTestPage({
           status={session.status}
           copy={ui.timerPanel}
         />
-        {!isFocusMode && session.status === 'running' && (
-          <StatsPanel metrics={metrics} live copy={ui.statsPanel} />
-        )}
+
       </div>
 
       <TextDisplay
@@ -149,13 +140,7 @@ export function TypingTestPage({
       <div className="test-page__actions">
         <button
           className="test-page__restart-btn"
-          onClick={() =>
-            reset({
-              duration: prefs.duration,
-              ignorePunctuation: prefs.ignorePunctuation,
-              language: prefs.language,
-            })
-          }
+          onClick={() => resetSession()}
         >
           {ui.typingPage.restartNow}
         </button>
@@ -177,11 +162,9 @@ export function TypingTestPage({
         />
       )}
 
-      {!isFocusMode && (
+      {!isFocusMode && session.status === 'idle' && (
         <div className="test-page__hint">
-          {session.status === 'idle' && ui.typingPage.startHint}
-          {session.status === 'running' && ' '}
-          {session.status === 'finished' && ' '}
+          {ui.typingPage.startHint}
         </div>
       )}
 
@@ -190,13 +173,7 @@ export function TypingTestPage({
           metrics={metrics}
           best={best}
           copy={ui}
-          onRestart={() =>
-            reset({
-              duration: prefs.duration,
-              ignorePunctuation: prefs.ignorePunctuation,
-              language: prefs.language,
-            })
-          }
+          onRestart={() => resetSession()}
         />
       )}
     </section>

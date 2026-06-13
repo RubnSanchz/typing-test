@@ -5,25 +5,27 @@
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 0 1.5rem;
-  transition: transform 150ms ease-out;
-  transform: scale(var(--app-zoom-scale));
-  transform-origin: top center;
+  /* Use the `zoom` property (not transform: scale) so it affects layout and
+     does not break the sticky header/footer the way a transform ancestor does. */
+  zoom: var(--app-zoom-scale);
 }
 
 .shell__header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 0;
   border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-bg);
 }
 
 .shell__logo {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  color: var(--color-accent);
-  letter-spacing: -0.05em;
+  height: 2.25rem;
+  width: auto;
+  display: block;
 }
 
 .shell__controls {
@@ -230,9 +232,24 @@
 }
 
 .shell__footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
   padding: 1rem 0;
   border-top: 1px solid var(--color-border);
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
-  text-align: center;
+  background-color: var(--color-bg);
+}
+
+/* User badge pinned left, donate button pinned right; title stays centered. */
+.shell__footer .auth-badge {
+  justify-self: start;
+}
+
+.shell__footer .donate-btn {
+  justify-self: end;
 }

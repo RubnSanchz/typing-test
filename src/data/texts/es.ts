@@ -156,13 +156,4 @@ const passages: TextPassage[] = [
   },
 ]
 
-/**
- * Returns a randomly selected passage from the catalogue.
- * Pass a seed-based index if you need reproducibility in tests.
- */
-export function getRandomPassage(): TextPassage {
-  const index = Math.floor(Math.random() * passages.length)
-  return passages[index]
-}
-
 export default passages

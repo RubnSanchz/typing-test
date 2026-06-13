@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { readStorage, writeStorage } from '@/utils/storage'
 import type { LanguageCode, UserPreferences } from '@/types/domain'
 
 const STORAGE_KEY = 'tt-prefs'
@@ -11,7 +12,7 @@ function keyForProfile(profileId: string): string {
 
 function load(profileId: string): UserPreferences {
   try {
-    const raw = localStorage.getItem(keyForProfile(profileId))
+    const raw = readStorage(keyForProfile(profileId))
     if (!raw) return { duration: 60, ignorePunctuation: true, language: 'es' }
     const parsed = JSON.parse(raw) as Partial<UserPreferences>
     const duration = DURATION_OPTIONS.includes(parsed.duration as (typeof DURATION_OPTIONS)[number])
@@ -37,13 +38,7 @@ export function useSettings(profileId: string) {
   const updatePrefs = (updater: (current: UserPreferences) => UserPreferences) => {
     setPrefs((current) => {
       const next = updater(current)
-
-      try {
-        localStorage.setItem(keyForProfile(profileId), JSON.stringify(next))
-      } catch {
-        // Ignore storage failures and keep the in-memory preferences working.
-      }
-
+      writeStorage(keyForProfile(profileId), JSON.stringify(next))
       return next
     })
   }
@@ -71,6 +66,5 @@ export function useSettings(profileId: string) {
     setLanguage,
     setPreferences,
     durationOptions: DURATION_OPTIONS,
-    languageOptions: LANGUAGE_OPTIONS,
   } as const
 }

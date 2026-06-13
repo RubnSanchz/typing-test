@@ -37,6 +37,13 @@ jobs:
 
       - name: Build web app
         run: npm run build:web
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
 
       - name: Upload web artifact (for Pages)
         uses: actions/upload-pages-artifact@v3
@@ -76,6 +83,13 @@ jobs:
 
       - name: Build installer
         run: npm run dist:win
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
 
       - name: Collect desktop artifacts
         shell: pwsh
@@ -111,12 +125,47 @@ jobs:
           path: artifacts
           if-no-files-found: error
 
+  firebase-deploy:
+    name: Deploy Web to Firebase Hosting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app (root base)
+        run: npm run build:firebase
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TYPING_TEST_FREE }}
+          projectId: typing-test-free
+          channelId: live
+
   publish-release:
     name: Publish GitHub Release
     runs-on: ubuntu-latest
     if: ${{ always() && needs.desktop-build.result == 'success' }}
     needs:
       - deploy-web
+      - firebase-deploy
       - desktop-build
     steps:
       - name: Checkout
@@ -130,12 +179,8 @@ jobs:
         run: |
           PKG_VERSION=$(node -p "require('./package.json').version")
           TAG="v${PKG_VERSION}"
-          REPO_NAME="${GITHUB_REPOSITORY#*/}"
-          DEFAULT_WEB_URL="https://${GITHUB_REPOSITORY_OWNER}.github.io/${REPO_NAME}/"
-          WEB_URL="${{ needs.deploy-web.outputs.page_url }}"
-          if [ -z "$WEB_URL" ]; then
-            WEB_URL="$DEFAULT_WEB_URL"
-          fi
+          # Public web app is served from Firebase Hosting.
+          WEB_URL="https://typing-test-free.web.app"
           echo "pkg_version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "web_url=$WEB_URL" >> "$GITHUB_OUTPUT"

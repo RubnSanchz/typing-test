@@ -6,11 +6,10 @@ interface Props {
   value: string
   onChange: (value: string) => void
   disabled: boolean
-  onFocus?: () => void
   copy: TypingInputCopy
 }
 
-export function TypingInput({ value, onChange, disabled, onFocus, copy }: Props) {
+export function TypingInput({ value, onChange, disabled, copy }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Auto-focus on mount and re-focus when disabled resets to false
@@ -27,7 +26,6 @@ export function TypingInput({ value, onChange, disabled, onFocus, copy }: Props)
       type="text"
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      onFocus={onFocus}
       disabled={disabled}
       autoComplete="off"
       autoCorrect="off"

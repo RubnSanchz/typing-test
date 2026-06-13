@@ -1,4 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { readStorage, writeStorage } from '@/utils/storage'
+import { syncProfileMetadata, deleteProfileFromCloud } from '@/features/sync/profileSync'
+import { onUidChanged } from '@/lib/firebase'
 import type { UserProfile } from '@/types/domain'
 
 const STORAGE_KEY = 'tt-profiles'
@@ -7,22 +10,6 @@ const ACTIVE_KEY = 'tt-active-profile'
 const DEFAULT_PROFILES: UserProfile[] = [{ id: 'default', name: 'Perfil por defecto' }]
 
 const LEGACY_DEFAULT_IDS = new Set(['person-default', 'keyboard-laptop'])
-
-function readStorage(key: string): string | null {
-  try {
-    return localStorage.getItem(key)
-  } catch {
-    return null
-  }
-}
-
-function writeStorage(key: string, value: string): void {
-  try {
-    localStorage.setItem(key, value)
-  } catch {
-    // Ignore storage write failures so the in-memory profile flow keeps working.
-  }
-}
 
 function sanitizeName(name: string): string {
   return name
@@ -83,6 +70,20 @@ export function useProfiles() {
     }
   }, [activeProfileId, profiles])
 
+  // Whenever the signed-in user changes (initial anonymous sign-in, or a later
+  // Google/email login), push every local profile's metadata so the current
+  // account's cloud document holds all profiles — not just ones changed after.
+  const profilesRef = useRef(profiles)
+  useEffect(() => {
+    profilesRef.current = profiles
+  }, [profiles])
+  useEffect(() => {
+    return onUidChanged((uid) => {
+      if (!uid) return
+      profilesRef.current.forEach((profile) => void syncProfileMetadata(profile))
+    })
+  }, [])
+
   const activeProfile = useMemo(
     () => profiles.find((profile) => profile.id === activeProfileId) ?? profiles[0] ?? DEFAULT_PROFILES[0],
     [activeProfileId, profiles],
@@ -112,6 +113,7 @@ export function useProfiles() {
 
     setProfiles((prev) => [...prev, profile])
     setActiveProfileId(id)
+    void syncProfileMetadata(profile, { isNew: true })
     return true
   }
 
@@ -122,11 +124,13 @@ export function useProfiles() {
     setProfiles((prev) =>
       prev.map((profile) => (profile.id === profileId ? { ...profile, name: trimmed } : profile)),
     )
+    void syncProfileMetadata({ id: profileId, name: trimmed })
 
     return true
   }
 
   const deleteProfile = (profileId: string) => {
+    void deleteProfileFromCloud(profileId)
     const nextProfiles = profiles.filter((profile) => profile.id !== profileId)
 
     if (nextProfiles.length === 0) {

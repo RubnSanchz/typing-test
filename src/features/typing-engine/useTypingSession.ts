@@ -23,7 +23,7 @@ export function useTypingSession(options: SessionOptions) {
 
   // Start/stop RAF loop
   useEffect(() => {
-    if (session.status !== 'running') {
+    if (session.status !== 'running' || !session.startTime) {
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current)
         rafRef.current = null
@@ -32,8 +32,7 @@ export function useTypingSession(options: SessionOptions) {
     }
 
     const loop = () => {
-      if (!session.startTime) return
-      const elapsed = (performance.now() - session.startTime) / 1000
+      const elapsed = (performance.now() - session.startTime!) / 1000
       elapsedRef.current = elapsed
 
       if (elapsed >= duration) {
