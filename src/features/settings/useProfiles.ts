@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { readStorage, writeStorage } from '@/utils/storage'
+import { syncProfileMetadata, deleteProfileFromCloud } from '@/features/sync/profileSync'
 import type { UserProfile } from '@/types/domain'
 
 const STORAGE_KEY = 'tt-profiles'
@@ -97,6 +98,7 @@ export function useProfiles() {
 
     setProfiles((prev) => [...prev, profile])
     setActiveProfileId(id)
+    void syncProfileMetadata(profile, { isNew: true })
     return true
   }
 
@@ -107,11 +109,13 @@ export function useProfiles() {
     setProfiles((prev) =>
       prev.map((profile) => (profile.id === profileId ? { ...profile, name: trimmed } : profile)),
     )
+    void syncProfileMetadata({ id: profileId, name: trimmed })
 
     return true
   }
 
   const deleteProfile = (profileId: string) => {
+    void deleteProfileFromCloud(profileId)
     const nextProfiles = profiles.filter((profile) => profile.id !== profileId)
 
     if (nextProfiles.length === 0) {

@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { DURATION_OPTIONS, LANGUAGE_OPTIONS } from '@/features/settings/useSettings'
 import { readStorage, writeStorage } from '@/utils/storage'
+import { syncProfileStats } from '@/features/sync/profileSync'
 import type { BestResult, HistoryMode, HistoryModeEntry, HistoryStats, TypingMetrics } from '@/types/domain'
 
 const STORAGE_KEY = 'tt-history'
@@ -132,6 +133,7 @@ export function useHistory(profileId: string, currentMode: HistoryMode) {
     }
 
     writeStore(profileId, nextStore)
+    void syncProfileStats(profileId, nextStore.modes)
     setRevision((value) => value + 1)
   }, [profileId])
 
