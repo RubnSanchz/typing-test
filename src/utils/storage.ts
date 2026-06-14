@@ -26,3 +26,23 @@ export function removeStorage(key: string): void {
     // Ignore storage removal failures.
   }
 }
+
+// Keys preserved across sign-out: device-level UI prefs, not account data.
+const KEEP_ON_SIGN_OUT = new Set(['tt-theme'])
+
+/**
+ * Remove account-scoped data (profiles, preferences, history) on sign-out so the
+ * next user on this device starts clean. Device UI prefs (theme, zoom) are kept.
+ */
+export function clearLocalUserData(): void {
+  try {
+    const toRemove: string[] = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith('tt-') && !KEEP_ON_SIGN_OUT.has(key)) toRemove.push(key)
+    }
+    toRemove.forEach((key) => localStorage.removeItem(key))
+  } catch {
+    // Ignore storage failures.
+  }
+}

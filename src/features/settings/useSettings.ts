@@ -16,10 +16,28 @@ function keyForProfile(profileId: string): string {
   return prefsStorageKey(profileId)
 }
 
+// First-run language: use the device language if supported, else English.
+// Once the user picks a language it is stored and this is no longer consulted.
+function detectDeviceLanguage(): LanguageCode {
+  const candidates =
+    typeof navigator === 'undefined' ? [] : [navigator.language, ...(navigator.languages ?? [])]
+  for (const candidate of candidates) {
+    const base = candidate?.toLowerCase().split('-')[0]
+    if (base && (LANGUAGE_OPTIONS as readonly string[]).includes(base)) {
+      return base as LanguageCode
+    }
+  }
+  return 'en'
+}
+
+function defaultPreferences(): UserPreferences {
+  return { duration: 60, ignorePunctuation: true, language: detectDeviceLanguage() }
+}
+
 function load(profileId: string): UserPreferences {
   try {
     const raw = readStorage(keyForProfile(profileId))
-    if (!raw) return { duration: 60, ignorePunctuation: true, language: 'es' }
+    if (!raw) return defaultPreferences()
     const parsed = JSON.parse(raw) as Partial<UserPreferences>
     const duration = DURATION_OPTIONS.includes(parsed.duration as (typeof DURATION_OPTIONS)[number])
       ? (parsed.duration as number)
@@ -27,10 +45,10 @@ function load(profileId: string): UserPreferences {
     const ignorePunctuation = parsed.ignorePunctuation ?? true
     const language = LANGUAGE_OPTIONS.includes(parsed.language as LanguageCode)
       ? (parsed.language as LanguageCode)
-      : 'es'
+      : detectDeviceLanguage()
     return { duration, ignorePunctuation, language }
   } catch {
-    return { duration: 60, ignorePunctuation: true, language: 'es' }
+    return defaultPreferences()
   }
 }
 

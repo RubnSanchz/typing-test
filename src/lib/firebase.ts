@@ -1,6 +1,5 @@
-import { initializeApp, type FirebaseApp } from 'firebase/app'
-import { getFirestore, type Firestore } from 'firebase/firestore'
-import { getAuth, onAuthStateChanged, signInAnonymously, type Auth, type User } from 'firebase/auth'
+import type { Firestore } from 'firebase/firestore'
+import type { Auth, User } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -11,16 +10,12 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 }
 
-// The app is local-first: Firestore sync is optional. When the config is
-// incomplete (no .env.local, CI without secrets, etc.) we skip initialization
-// entirely so the rest of the app keeps working offline.
+// The app is local-first and Firebase is loaded lazily (dynamic import), so the
+// SDK stays out of the initial bundle. When the config is incomplete we never
+// load it and every accessor resolves to null, leaving the app fully offline.
 export const isFirebaseConfigured = Boolean(
   firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId,
 )
-
-let app: FirebaseApp | null = null
-let firestore: Firestore | null = null
-let authInstance: Auth | null = null
 
 // Live current user, kept in sync with auth state. Sync targets this user's uid,
 // so it follows the user across anonymous → Google/email sign-in and back.
@@ -29,41 +24,59 @@ let resolveReady: (() => void) | null = null
 const authReady = new Promise<void>((resolve) => {
   resolveReady = resolve
 })
-
 function markReady() {
   resolveReady?.()
   resolveReady = null
 }
 
-if (isFirebaseConfigured) {
-  try {
-    app = initializeApp(firebaseConfig)
-    firestore = getFirestore(app)
-    authInstance = getAuth(app)
+let firebasePromise: Promise<{ db: Firestore; auth: Auth } | null> | null = null
 
-    onAuthStateChanged(authInstance, (user) => {
+async function initFirebase(): Promise<{ db: Firestore; auth: Auth } | null> {
+  try {
+    const [{ initializeApp }, { getFirestore }, authMod] = await Promise.all([
+      import('firebase/app'),
+      import('firebase/firestore'),
+      import('firebase/auth'),
+    ])
+    const app = initializeApp(firebaseConfig)
+    const db = getFirestore(app)
+    const auth = authMod.getAuth(app)
+
+    authMod.onAuthStateChanged(auth, (user) => {
       currentUser = user
       if (user) {
         markReady()
-      } else if (authInstance) {
-        // Signed out (or first load): keep an anonymous identity as the sync
+      } else {
+        // Signed out / first load: keep an anonymous identity as the sync
         // baseline so the cloud backup works even without an explicit login.
-        signInAnonymously(authInstance).catch((error) => {
+        authMod.signInAnonymously(auth).catch((error) => {
           console.warn('[firebase] anonymous sign-in failed; sync disabled', error)
           markReady()
         })
       }
     })
+    return { db, auth }
   } catch (error) {
     console.warn('[firebase] initialization failed; sync disabled', error)
     markReady()
+    return null
   }
-} else {
-  markReady()
 }
 
-export const db = firestore
-export const auth = authInstance
+/** Lazily load + initialize Firebase once. Resolves null when not configured. */
+export function getFirebase(): Promise<{ db: Firestore; auth: Auth } | null> {
+  if (!isFirebaseConfigured) return Promise.resolve(null)
+  if (!firebasePromise) firebasePromise = initFirebase()
+  return firebasePromise
+}
+
+export async function getDb(): Promise<Firestore | null> {
+  return (await getFirebase())?.db ?? null
+}
+
+export async function getAuthInstance(): Promise<Auth | null> {
+  return (await getFirebase())?.auth ?? null
+}
 
 /**
  * Resolves the current user's uid (anonymous, Google or email/password),
@@ -71,7 +84,8 @@ export const auth = authInstance
  * configured or sign-in failed, in which case sync becomes a no-op.
  */
 export async function getCurrentUid(): Promise<string | null> {
-  if (!authInstance) return null
+  const fb = await getFirebase()
+  if (!fb) return null
   await authReady
   return currentUser?.uid ?? null
 }
@@ -81,9 +95,20 @@ export async function getCurrentUid(): Promise<string | null> {
  * changes (anonymous ⇄ Google/email). Returns an unsubscribe function.
  */
 export function onUidChanged(callback: (uid: string | null) => void): () => void {
-  if (!authInstance) {
-    callback(null)
-    return () => {}
+  let unsubscribe = () => {}
+  let cancelled = false
+  void getFirebase().then(async (fb) => {
+    if (cancelled) return
+    if (!fb) {
+      callback(null)
+      return
+    }
+    const { onAuthStateChanged } = await import('firebase/auth')
+    if (cancelled) return
+    unsubscribe = onAuthStateChanged(fb.auth, (user) => callback(user?.uid ?? null))
+  })
+  return () => {
+    cancelled = true
+    unsubscribe()
   }
-  return onAuthStateChanged(authInstance, (user) => callback(user?.uid ?? null))
 }
