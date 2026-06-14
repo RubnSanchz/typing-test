@@ -1,13 +1,19 @@
 import { useEffect, useState } from 'react'
 import { readStorage, writeStorage } from '@/utils/storage'
+import { syncProfilePrefs } from '@/features/sync/profileSync'
+import { CLOUD_SYNCED_EVENT } from '@/features/sync/events'
 import type { LanguageCode, UserPreferences } from '@/types/domain'
 
 const STORAGE_KEY = 'tt-prefs'
 export const DURATION_OPTIONS = [15, 30, 60] as const
 export const LANGUAGE_OPTIONS = ['es', 'en', 'fr'] as const
 
-function keyForProfile(profileId: string): string {
+export function prefsStorageKey(profileId: string): string {
   return `${STORAGE_KEY}-${profileId}`
+}
+
+function keyForProfile(profileId: string): string {
+  return prefsStorageKey(profileId)
 }
 
 function load(profileId: string): UserPreferences {
@@ -35,10 +41,18 @@ export function useSettings(profileId: string) {
     setPrefs(load(profileId))
   }, [profileId])
 
+  // Reload from storage after a cloud pull merges this account's preferences.
+  useEffect(() => {
+    const reload = () => setPrefs(load(profileId))
+    window.addEventListener(CLOUD_SYNCED_EVENT, reload)
+    return () => window.removeEventListener(CLOUD_SYNCED_EVENT, reload)
+  }, [profileId])
+
   const updatePrefs = (updater: (current: UserPreferences) => UserPreferences) => {
     setPrefs((current) => {
       const next = updater(current)
       writeStorage(keyForProfile(profileId), JSON.stringify(next))
+      void syncProfilePrefs(profileId, next)
       return next
     })
   }

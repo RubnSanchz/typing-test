@@ -12,8 +12,12 @@ interface StoredHistory {
   modes: Record<string, HistoryStats>
 }
 
-function keyForProfile(profileId: string): string {
+export function profileHistoryKey(profileId: string): string {
   return `${STORAGE_KEY}-${profileId}`
+}
+
+function keyForProfile(profileId: string): string {
+  return profileHistoryKey(profileId)
 }
 
 function emptyStats(): HistoryStats {

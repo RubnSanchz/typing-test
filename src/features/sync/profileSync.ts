@@ -1,6 +1,6 @@
 import { doc, setDoc, updateDoc, deleteField, serverTimestamp, type DocumentReference } from 'firebase/firestore'
 import { db, getCurrentUid } from '@/lib/firebase'
-import type { HistoryStats, UserProfile } from '@/types/domain'
+import type { HistoryStats, UserPreferences, UserProfile } from '@/types/domain'
 
 const COLLECTION = 'profiles'
 
@@ -82,6 +82,31 @@ export async function syncProfileStats(
     )
   } catch (error) {
     console.warn('[firebase] syncProfileStats failed', error)
+  }
+}
+
+/** Persist a profile's preferences (duration, language, punctuation). */
+export async function syncProfilePrefs(profileId: string, prefs: UserPreferences): Promise<void> {
+  const ref = await userDoc()
+  if (!ref) return
+  try {
+    await setDoc(
+      ref,
+      {
+        uid: ref.id,
+        updatedAt: serverTimestamp(),
+        profiles: {
+          [profileId]: {
+            id: profileId,
+            prefs,
+            updatedAt: serverTimestamp(),
+          },
+        },
+      },
+      { merge: true },
+    )
+  } catch (error) {
+    console.warn('[firebase] syncProfilePrefs failed', error)
   }
 }
 

@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { readStorage, writeStorage } from '@/utils/storage'
 import { syncProfileMetadata, deleteProfileFromCloud } from '@/features/sync/profileSync'
+import { pullCloudProfiles } from '@/features/sync/cloudPull'
+import { CLOUD_SYNCED_EVENT } from '@/features/sync/events'
 import { onUidChanged } from '@/lib/firebase'
 import type { UserProfile } from '@/types/domain'
 
@@ -80,7 +82,26 @@ export function useProfiles() {
   useEffect(() => {
     return onUidChanged((uid) => {
       if (!uid) return
-      profilesRef.current.forEach((profile) => void syncProfileMetadata(profile))
+      // Download any tests done elsewhere with this account first (merging cloud
+      // stats into local storage and adding missing profiles), then upload local
+      // metadata. Pull before upload so the server read isn't masked by the
+      // upload's pending local write.
+      void pullCloudProfiles(uid)
+        .then((cloud) => {
+          if (cloud === null) return
+          if (cloud.length > 0) {
+            setProfiles((prev) => {
+              const byId = new Map(prev.map((p) => [p.id, p]))
+              for (const c of cloud) if (!byId.has(c.id)) byId.set(c.id, c)
+              return [...byId.values()]
+            })
+          }
+          // Notify cached hooks (useSettings) to reload merged data.
+          window.dispatchEvent(new Event(CLOUD_SYNCED_EVENT))
+        })
+        .finally(() => {
+          profilesRef.current.forEach((profile) => void syncProfileMetadata(profile))
+        })
     })
   }, [])
 
