@@ -1,5 +1,4 @@
-import { doc, getDocFromServer } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
+import { getDb } from '@/lib/firebase'
 import { readStorage, writeStorage } from '@/utils/storage'
 import { profileHistoryKey } from '@/features/stats/useHistory'
 import { prefsStorageKey } from '@/features/settings/useSettings'
@@ -20,8 +19,10 @@ interface CloudProfile {
  * is unavailable, the doc is missing, or on error — the app stays local-first.
  */
 export async function pullCloudProfiles(uid: string): Promise<UserProfile[] | null> {
+  const db = await getDb()
   if (!db) return null
   try {
+    const { doc, getDocFromServer } = await import('firebase/firestore')
     // Read straight from the server: getDoc would layer the concurrent metadata
     // upload's pending write (which lacks `stats`) over the not-yet-fetched doc.
     const snap = await getDocFromServer(doc(db, 'profiles', uid))
