@@ -9,9 +9,23 @@ import type { UserProfile } from '@/types/domain'
 const STORAGE_KEY = 'tt-profiles'
 const ACTIVE_KEY = 'tt-active-profile'
 
-const DEFAULT_PROFILES: UserProfile[] = [{ id: 'default', name: 'Perfil por defecto' }]
+export const DEFAULT_PROFILE_ID = 'default'
+export const DEFAULT_PROFILE_NAME = 'Perfil por defecto'
+
+const DEFAULT_PROFILES: UserProfile[] = [{ id: DEFAULT_PROFILE_ID, name: DEFAULT_PROFILE_NAME }]
 
 const LEGACY_DEFAULT_IDS = new Set(['person-default', 'keyboard-laptop'])
+
+/**
+ * Display name for a profile: the seed default profile (never renamed) shows a
+ * translated label; every other profile — including a renamed default — keeps
+ * its stored name. The stored value is never mutated, only the rendered label.
+ */
+export function profileDisplayName(profile: UserProfile, translatedDefault: string): string {
+  return profile.id === DEFAULT_PROFILE_ID && profile.name === DEFAULT_PROFILE_NAME
+    ? translatedDefault
+    : profile.name
+}
 
 function sanitizeName(name: string): string {
   return name
@@ -40,7 +54,7 @@ function loadProfiles(): UserProfile[] {
     const userProfiles = validProfiles.filter((profile) => !LEGACY_DEFAULT_IDS.has(profile.id))
 
     if (legacyDefaults.length > 0) {
-      return [{ id: 'default', name: 'Perfil por defecto' }, ...userProfiles]
+      return [{ id: DEFAULT_PROFILE_ID, name: DEFAULT_PROFILE_NAME }, ...userProfiles]
     }
 
     return validProfiles

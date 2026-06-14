@@ -19,13 +19,6 @@
   justify-content: flex-start;
 }
 
-.test-page__hint {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  min-height: 1.4em;
-  text-align: center;
-}
-
 .test-page__actions {
   display: flex;
   justify-content: center;

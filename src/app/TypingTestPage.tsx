@@ -162,12 +162,6 @@ export function TypingTestPage({
         />
       )}
 
-      {!isFocusMode && session.status === 'idle' && (
-        <div className="test-page__hint">
-          {ui.typingPage.startHint}
-        </div>
-      )}
-
       {session.status === 'finished' && (
         <ResultsModal
           metrics={metrics}

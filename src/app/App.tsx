@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTheme } from '@/features/theme/useTheme'
-import { useProfiles } from '@/features/settings/useProfiles'
+import { useProfiles, profileDisplayName } from '@/features/settings/useProfiles'
 import { useSettings } from '@/features/settings/useSettings'
 import { useZoom } from '@/features/zoom/useZoom'
 import { getUiCopy } from '@/data/uiCopy'
@@ -14,13 +14,14 @@ export function App() {
   const { prefs, setDuration, setIgnorePunctuation, setLanguage, setPreferences, durationOptions } = useSettings(activeProfile.id)
   useZoom() // Initialize zoom listeners
   const ui = getUiCopy(prefs.language)
+  const activeProfileName = profileDisplayName(activeProfile, ui.shell.defaultProfileName)
 
   const handleCreateProfile = (name: string) => createProfile(name)
 
   const handleRenameProfile = (profileId: string, name: string) => renameProfile(profileId, name)
 
   const handleDeleteProfile = () => {
-    const confirmed = window.confirm(ui.app.confirmDeleteProfile(activeProfile.name))
+    const confirmed = window.confirm(ui.app.confirmDeleteProfile(activeProfileName))
     if (!confirmed) return
     deleteProfile(activeProfile.id)
   }
@@ -44,7 +45,7 @@ export function App() {
     >
       <TypingTestPage
         profileId={activeProfile.id}
-        profileName={activeProfile.name}
+        profileName={activeProfileName}
         prefs={prefs}
         setDuration={setDuration}
         setIgnorePunctuation={setIgnorePunctuation}

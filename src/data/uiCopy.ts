@@ -22,6 +22,7 @@ export interface ShellCopy {
   themeNameLight: string
   themeNameDark: string
   footerTitle: string
+  defaultProfileName: string
   languageOptions: Record<LanguageCode, string>
 }
 
@@ -33,7 +34,6 @@ interface AppCopy {
 
 interface TypingPageCopy {
   restartNow: string
-  startHint: string
   textDisplayAria: string
 }
 
@@ -159,6 +159,7 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
       themeNameLight: 'claro',
       themeNameDark: 'oscuro',
       footerTitle: 'typing test',
+      defaultProfileName: 'Perfil por defecto',
       languageOptions: {
         es: 'Español',
         en: 'Inglés',
@@ -167,7 +168,6 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
     },
     typingPage: {
       restartNow: 'Reiniciar ahora',
-      startHint: 'Empieza a escribir para iniciar el test',
       textDisplayAria: 'Texto objetivo',
     },
     typingInput: {
@@ -276,6 +276,7 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
       themeNameLight: 'light',
       themeNameDark: 'dark',
       footerTitle: 'typing test',
+      defaultProfileName: 'Default profile',
       languageOptions: {
         es: 'Spanish',
         en: 'English',
@@ -284,7 +285,6 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
     },
     typingPage: {
       restartNow: 'Restart now',
-      startHint: 'Start typing to begin the test',
       textDisplayAria: 'Target text',
     },
     typingInput: {
@@ -393,6 +393,7 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
       themeNameLight: 'clair',
       themeNameDark: 'sombre',
       footerTitle: 'typing test',
+      defaultProfileName: 'Profil par défaut',
       languageOptions: {
         es: 'Espagnol',
         en: 'Anglais',
@@ -401,7 +402,6 @@ const UI_COPY: Record<LanguageCode, UiCopy> = {
     },
     typingPage: {
       restartNow: 'Redemarrer',
-      startHint: 'Commence a taper pour lancer le test',
       textDisplayAria: 'Texte cible',
     },
     typingInput: {
