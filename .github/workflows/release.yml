@@ -157,6 +157,7 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TYPING_TEST_FREE }}
           projectId: typing-test-free
+          firebaseToolsVersion: 15.34.0
           channelId: live
 
   publish-release:
